@@ -5,4 +5,4 @@ jdk:
     - openjdk11
   
 script:
-    - mvn clean verify
+    - mvn "-Dtest=org/apache/bookkeeper/tests/*Test" -DfailIfNoTests=false clean verify
