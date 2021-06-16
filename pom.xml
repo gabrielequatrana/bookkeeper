@@ -47,16 +47,14 @@
 		<url>https://builds.apache.org/job/bookkeeper-master</url>
 	</ciManagement>
 	<modules>
-		<module>bookkeeper-server</module>
-		<module>bookkeeper-common</module>
-		<module>bookkeeper-stats</module>
-		
 		<module>buildtools</module>
 		<module>circe-checksum</module>
+		<module>bookkeeper-common</module>
 		<module>bookkeeper-common-allocator</module>
 		<module>stats</module>
-		
+		<module>bookkeeper-stats</module>
 		<module>bookkeeper-proto</module>
+		<module>bookkeeper-server</module>
 		<module>bookkeeper-benchmark</module>
 		<module>bookkeeper-stats-providers</module>
 		<module>bookkeeper-http</module>
@@ -67,8 +65,7 @@
 		<module>bookkeeper-dist</module>
 		<module>shaded</module>
 		<module>microbenchmarks</module>
-		<!-- <module>tests</module> -->
-		
+
 		<module>my-tests</module>
 	</modules>
 	<mailingLists>
@@ -198,6 +195,15 @@
 		<forkCount.variable>1</forkCount.variable>
 		<servlet-api.version>4.0.0</servlet-api.version>
 
+		<!-- Sonar cloud -->
+		<sonar.host.url>http://sonarcloud.io</sonar.host.url>
+		<sonar.organization>gabrielequatrana</sonar.organization>
+		<sonar.projectName>bookkeeper</sonar.projectName>
+		<sonar.login>f9a6955fed7d163379bce04db40367924cd6d954</sonar.login>
+		<sonar.language>java</sonar.language>
+		<sonar.java.source>11</sonar.java.source>
+		<sonar.java.file.suffixes>.java</sonar.java.file.suffixes>
+		<sonar.verbose>true</sonar.verbose>
 		<aggregate.report.dir>my-tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
 		<redirectTestOutputToFile>true</redirectTestOutputToFile>
 	</properties>
@@ -1026,6 +1032,27 @@
 					<consoleOutput>true</consoleOutput>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
 		</plugins>
 	</build>
 	<profiles>
@@ -1046,10 +1073,6 @@
 								<id>report</id>
 								<phase>verify</phase>
 								<goals>
-									<!-- tutti i moduli hanno nel pom il plugin jacoco e generano il 
-										report di coverage nella fase verify maven -->
-									<!-- quando viene effettuata la build, i vari report vengono aggregati 
-										per il calcolo totale del coverage su tutti i moduli del progetto -->
 									<goal>report-aggregate</goal>
 								</goals>
 							</execution>
