@@ -286,6 +286,22 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+				<configuration>
+					<argLine>@{argLine} -Xmx2G -Djava.net.preferIPv4Stack=true
+						-Dio.netty.leakDetection.level=paranoid</argLine>
+					<redirectTestOutputToFile>${redirectTestOutputToFile}</redirectTestOutputToFile>
+					<forkCount>${forkCount.variable}</forkCount>
+					<reuseForks>false</reuseForks>
+					<trimStackTrace>false</trimStackTrace>
+					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
+					<rerunFailingTestsCount>${testRetryCount}</rerunFailingTestsCount>
+				</configuration>
+			</plugin>
+			
 		</plugins>
 	</build>
 </project>
