@@ -59,7 +59,7 @@ public class DefaultEnsemblePlacementPolicy implements EnsemblePlacementPolicy {
     private WeightedRandomSelection<BookieId> weightedSelection;
     private final ReentrantReadWriteLock rwLock;
 
-    public DefaultEnsemblePlacementPolicy() {
+    DefaultEnsemblePlacementPolicy() {
         bookieInfoMap = new HashMap<BookieId, WeightedObject>();
         rwLock = new ReentrantReadWriteLock();
     }
