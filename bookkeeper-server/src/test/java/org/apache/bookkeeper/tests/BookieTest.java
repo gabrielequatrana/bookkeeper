@@ -45,7 +45,7 @@ public class BookieTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
-			{ Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]), false, null, null, null } 
+			{ Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]), false, null, null, new byte[512] } 
 		});
 	}
 	
