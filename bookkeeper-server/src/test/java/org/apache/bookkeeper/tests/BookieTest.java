@@ -58,6 +58,9 @@ public class BookieTest {
 	@Test
 	public void test() throws IOException, BookieException, InterruptedException {
 		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
-		assertEquals(2,2);
+		long ledgerId = entry.getLong(entry.readerIndex());
+		ByteBuf a = bookie.readEntry(ledgerId, entry.readerIndex());
+		
+		assertEquals(a, entry);
 	}
 }
