@@ -11,6 +11,7 @@ import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
 import org.apache.bookkeeper.conf.ServerConfiguration;
 import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,11 +24,11 @@ import io.netty.buffer.Unpooled;
 @RunWith(Parameterized.class)
 public class BookieTest {
 	
-	private static final int ENTRY_SIZE = 1024;
-	private static final int MAX_ENTRIES = 10;
-	private static final int CACHE_SIZE = ENTRY_SIZE * MAX_ENTRIES;
-
 	private Bookie bookie;
+	private ServerConfiguration conf;
+	
+	private static final int ENTRY_SIZE = 1024;
+	
 	private ByteBuf entry;
 	private boolean ackBeforeSync;
 	private WriteCallback cb;
@@ -45,22 +46,47 @@ public class BookieTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
-			{ Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]), false, null, null, new byte[512] } 
+			{ Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]), false, null, null, new byte[512] },
+			{ Unpooled.wrappedBuffer(new byte[ENTRY_SIZE]), true, null, null, new byte[ENTRY_SIZE]},
 		});
 	}
 	
 	@Before
 	public void setUp() throws IOException, InterruptedException, BookieException {
-		ServerConfiguration conf = TestConfiguration.getConfiguration();
+		conf = TestConfiguration.getConfiguration();
 		bookie = new BookieImpl(conf);
 	}
 	
+	@After
+	public void cleanUp() {
+		bookie.shutdown();
+		conf.clear();
+	}
+	
 	@Test
-	public void test() throws IOException, BookieException, InterruptedException {
-		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
-		long ledgerId = entry.getLong(entry.readerIndex());
-		ByteBuf a = bookie.readEntry(ledgerId, entry.readerIndex());
+	public void testAddAndRead() throws IOException, BookieException, InterruptedException {
+		System.out.println("----------- ADD -----------");
+		System.out.println("Entry: " + entry);
+		System.out.println("Ack Before Sync: " + ackBeforeSync);
+		System.out.println("Write Callback: " + cb);
+		System.out.println("CTX: " + ctx);
+		System.out.println("Master Key: " + masterKey);
 		
-		assertEquals(a, entry);
+		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
+		
+		long entryId = entry.readerIndex();
+		long ledgerId = entry.getLong((int)entryId);
+		
+		System.out.println("\n----------- READ -----------");
+		System.out.println("LedgerId: " + ledgerId);
+		System.out.println("EntryId: " + entryId);
+		
+		ByteBuf actual = bookie.readEntry(ledgerId, entryId);
+		
+		System.out.println("\n---------- RESULT ----------");
+		System.out.println("Expected: " + entry);
+		System.out.println("Actual: " + actual);
+		
+		assertEquals(entry, actual);
 	}
 }
