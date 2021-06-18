@@ -811,23 +811,6 @@
 	</dependencies>
 
 	<build>
-
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<executions>
-						<execution>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-		
 		<extensions>
 			<extension>
 				<groupId>kr.motd.maven</groupId>
@@ -1039,7 +1022,6 @@
 
 		</plugins>
 	</build>
-
 	<profiles>
 
 		<profile>
