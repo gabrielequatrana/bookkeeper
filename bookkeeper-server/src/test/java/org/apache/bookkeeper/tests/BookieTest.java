@@ -52,7 +52,7 @@ public class BookieTest {
 	@Before
 	public void setUp() throws IOException, InterruptedException, BookieException {
 		ServerConfiguration conf = TestConfiguration.getConfiguration();
-		bookie = new BookieImpl(null);
+		bookie = new BookieImpl(conf);
 	}
 	
 	@Test
