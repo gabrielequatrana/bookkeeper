@@ -89,4 +89,32 @@ public class BookieTest {
 		
 		assertEquals(entry, actual);
 	}
+	
+	@Test
+	public void testRecoveryAddEntry() throws IOException, BookieException, InterruptedException {
+		System.out.println("----------- ADD -----------");
+		System.out.println("Entry: " + entry);
+		System.out.println("Ack Before Sync: " + ackBeforeSync);
+		System.out.println("Write Callback: " + cb);
+		System.out.println("CTX: " + ctx);
+		System.out.println("Master Key: " + masterKey);
+		
+		long entryId = entry.readerIndex();
+		long ledgerId = entry.getLong((int)entryId);
+		
+		bookie.fenceLedger(ledgerId, masterKey);	
+		bookie.recoveryAddEntry(entry, cb, ctx, masterKey);
+		
+		System.out.println("\n----------- READ -----------");
+		System.out.println("LedgerId: " + ledgerId);
+		System.out.println("EntryId: " + entryId);
+		
+		ByteBuf actual = bookie.readEntry(ledgerId, entryId);
+		
+		System.out.println("\n---------- RESULT ----------");
+		System.out.println("Expected: " + entry);
+		System.out.println("Actual: " + actual);
+		
+		assertEquals(entry, actual);
+	}
 }
