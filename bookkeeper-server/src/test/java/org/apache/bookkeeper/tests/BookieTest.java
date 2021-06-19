@@ -76,6 +76,8 @@ public class BookieTest {
 		System.out.println("PRIMA: " + bookie.getTotalFreeSpace());
 		System.out.println("TOT: " + bookie.getTotalDiskSpace());
 		
+		System.out.println("DIOPORCO");
+		
 		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
 		
 		System.out.println("DOPO: " + bookie.getTotalFreeSpace());
@@ -91,6 +93,8 @@ public class BookieTest {
 		System.out.println("Write Callback: " + cb);
 		System.out.println("CTX: " + ctx);
 		System.out.println("Master Key: " + masterKey);
+		
+		System.out.println("DIOPORCO");
 		
 		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
 		
@@ -118,6 +122,8 @@ public class BookieTest {
 		System.out.println("Write Callback: " + cb);
 		System.out.println("CTX: " + ctx);
 		System.out.println("Master Key: " + masterKey);
+		
+		System.out.println("DIOPORCO");
 		
 		long entryId = entry.readerIndex();
 		long ledgerId = entry.getLong((int)entryId);
