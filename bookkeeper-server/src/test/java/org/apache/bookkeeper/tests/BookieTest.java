@@ -21,13 +21,9 @@ import org.junit.runners.Parameterized.Parameters;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 @RunWith(Parameterized.class)
 public class BookieTest {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(BookieTest.class);
 	
 	private Bookie bookie;
 	private ServerConfiguration conf;
@@ -80,13 +76,9 @@ public class BookieTest {
 		System.out.println("PRIMA: " + bookie.getTotalFreeSpace());
 		System.out.println("TOT: " + bookie.getTotalDiskSpace());
 		
-		LOG.info("PRIMA: " + bookie.getTotalFreeSpace());
-		LOG.info("TOT: " + bookie.getTotalDiskSpace());
-		
 		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
 		
 		System.out.println("DOPO: " + bookie.getTotalFreeSpace());
-		LOG.info("DOPO: " + bookie.getTotalFreeSpace());
 		
 		assertEquals(2,2);
 	}
