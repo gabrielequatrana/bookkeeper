@@ -56,8 +56,9 @@ public class BookieTest {
 	@Before
 	public void setUp() throws IOException, InterruptedException, BookieException {
 		conf = TestConfiguration.getConfiguration();
+		bookie = null;
 		bookie = new BookieImpl(conf);
-		bookie.start();
+		//bookie.start();
 	}
 
 	@After
