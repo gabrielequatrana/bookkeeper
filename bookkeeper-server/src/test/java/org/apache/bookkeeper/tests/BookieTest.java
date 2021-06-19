@@ -57,7 +57,7 @@ public class BookieTest {
 	public void setUp() throws IOException, InterruptedException, BookieException {
 		conf = TestConfiguration.getConfiguration();
 		bookie = new BookieImpl(conf);
-		// bookie.start();
+		bookie.start();
 	}
 
 	@After
@@ -65,30 +65,6 @@ public class BookieTest {
 		bookie.shutdown();
 		conf.clear();
 	}
-	/*
-	@Test
-	public void launch() throws IOException, BookieException, InterruptedException {
-		bookie.start();
-		System.out.println("A: " + bookie.isRunning());
-
-		bookie.recoveryAddEntry(entry, cb, ctx, masterKey);
-		
-		long entryId = entry.readerIndex();
-		long ledgerId = entry.getLong((int) entryId);
-
-		System.out.println("\n----------- READ -----------");
-		System.out.println("LedgerId: " + ledgerId);
-		System.out.println("EntryId: " + entryId);
-
-		ByteBuf actual = bookie.readEntry(ledgerId, entryId);
-
-		System.out.println("\n---------- RESULT ----------");
-		System.out.println("Expected: " + entry);
-		System.out.println("Actual: " + actual);
-		
-		assertEquals(2,2);
-	}*/
-
 	
 	@Test
 	public void testAddAndRead() throws IOException, BookieException, InterruptedException {
@@ -171,7 +147,7 @@ public class BookieTest {
 
 		ByteBuf expected = createExplicitLACEntry(ledgerId, entry);
 
-		assertEquals(2, 2);
+		assertEquals(expected, actual);
 	}
 
 	private ByteBuf createExplicitLACEntry(long ledgerId, ByteBuf explicitLac) {
