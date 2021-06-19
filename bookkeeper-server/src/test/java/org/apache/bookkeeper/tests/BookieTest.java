@@ -65,6 +65,24 @@ public class BookieTest {
 	}
 	
 	@Test
+	public void test() throws IOException, BookieException, InterruptedException {
+		System.out.println("----------- ADD -----------");
+		System.out.println("Entry: " + entry);
+		System.out.println("Ack Before Sync: " + ackBeforeSync);
+		System.out.println("Write Callback: " + cb);
+		System.out.println("CTX: " + ctx);
+		System.out.println("Master Key: " + masterKey);
+		System.out.println("PRIMA: " + bookie.getTotalFreeSpace());
+		System.out.println("TOT: " + bookie.getTotalDiskSpace());
+		
+		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
+		
+		System.out.println("DOPO: " + bookie.getTotalFreeSpace());
+		
+		assertEquals(2,2);
+	}
+	
+	@Test
 	public void testAddAndRead() throws IOException, BookieException, InterruptedException {
 		System.out.println("----------- ADD -----------");
 		System.out.println("Entry: " + entry);
