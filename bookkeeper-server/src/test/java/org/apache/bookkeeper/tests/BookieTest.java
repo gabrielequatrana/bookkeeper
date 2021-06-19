@@ -58,7 +58,7 @@ public class BookieTest {
 		conf = TestConfiguration.getConfiguration();
 		bookie = null;
 		bookie = new BookieImpl(conf);
-		//bookie.start();
+		bookie.start();
 	}
 
 	@After
@@ -121,7 +121,7 @@ public class BookieTest {
 
 		assertEquals(entry, actual);
 	}
-
+/*
 	@Test
 	public void testSetAndGetExplicitLac() throws NoLedgerException, IOException, InterruptedException, BookieException {
 		System.out.println("----------- ADD -----------");
@@ -149,7 +149,7 @@ public class BookieTest {
 		ByteBuf expected = createExplicitLACEntry(ledgerId, entry);
 
 		assertEquals(expected, actual);
-	}
+	}*/
 
 	private ByteBuf createExplicitLACEntry(long ledgerId, ByteBuf explicitLac) {
 		ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
