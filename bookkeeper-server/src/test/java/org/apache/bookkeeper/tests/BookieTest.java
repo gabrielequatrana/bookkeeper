@@ -74,10 +74,10 @@ public class BookieTest {
 			{ 1L, 1L, false, null, new byte[0], null },
 			{ 0L, 0L, false, null, new byte[0], null },
 			{ 0L, 1L, false , "ledger-test", new byte[0], null},
-			/*{ -1L, -1L, false, new String(), new byte[0], IllegalArgumentException.class },
+			{ -1L, -1L, false, new String(), new byte[0], IllegalArgumentException.class },
 			{ 2L, -1L, true, "ledger-test", new byte[1], IndexOutOfBoundsException.class},
 			{ 1L, 2L, true, new String(), null, NullPointerException.class}
-		*/});
+		});
 	}
 	
 	@Before
