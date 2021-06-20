@@ -28,7 +28,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 
 @RunWith(Parameterized.class)
 public class BookieTest {
@@ -75,8 +74,8 @@ public class BookieTest {
 			{ 0L, 0L, false, null, new byte[0], null },
 			{ 0L, 1L, false , "ledger-test", new byte[0], null},
 			{ -1L, -1L, false, new String(), new byte[0], IllegalArgumentException.class },
-			{ 2L, -1L, true, "ledger-test", new byte[1], IndexOutOfBoundsException.class},
-			{ 1L, 2L, true, new String(), null, NullPointerException.class}
+			{ 2L, -1L, true, "ledger-test", new byte[1], IndexOutOfBoundsException.class },
+			{ 1L, 2L, true, new String(), null, NullPointerException.class }
 		});
 	}
 	
@@ -87,7 +86,7 @@ public class BookieTest {
 		
 		float usage = 1.0f - ((float) ledgerDir.getUsableSpace()) / ledgerDir.getTotalSpace();
 		
-		conf = TestConfiguration.getConfiguration();
+		conf = TestUtil.getConfiguration();
 		conf.setJournalDirsName(new String[] { journalDir.getAbsolutePath() });
 		conf.setLedgerDirNames(new String[] { ledgerDir.getAbsolutePath() });
 		conf.setMetadataServiceUri(null);
@@ -110,7 +109,7 @@ public class BookieTest {
 	@Test
 	public void addEntryTest() throws IOException, BookieException, InterruptedException {
 		long usableSpace = ledgerDir.getUsableSpace();
-		ByteBuf entry = generateEntry(ledgerId, entryId);
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);
 		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
 		byte[] dst = new byte[data.length];
 		entry.getBytes(16, dst);
@@ -146,7 +145,7 @@ public class BookieTest {
 	public void readEntryTest() throws IOException, BookieException, InterruptedException {
 		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
 		
-		ByteBuf entry = generateEntry(ledgerId, entryId);	
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);	
 		byte[] dst = new byte[data.length];
 		entry.getBytes(16, dst);
 		
@@ -190,7 +189,7 @@ public class BookieTest {
 		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
 		long usableSpace = ledgerDir.getUsableSpace();
 		
-		ByteBuf entry = generateEntry(ledgerId, entryId);	
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);	
 		byte[] dst = new byte[data.length];
 		entry.getBytes(16, dst);
 		
@@ -227,7 +226,7 @@ public class BookieTest {
 		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
 		long usableSpace = ledgerDir.getUsableSpace();
 		
-		ByteBuf entry = generateEntry(ledgerId, entryId);	
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);	
 		byte[] dst = new byte[data.length];
 		entry.getBytes(16, dst);
 		
@@ -262,7 +261,7 @@ public class BookieTest {
 	public void getExplicitLacTest() throws IOException, InterruptedException, BookieException {
 		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
 		
-		ByteBuf entry = generateEntry(ledgerId, entryId);	
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);	
 		byte[] dst = new byte[data.length];
 		entry.getBytes(16, dst);
 		
@@ -305,7 +304,7 @@ public class BookieTest {
 	public void readLAstAddConfirmedTest() throws NoLedgerException, IOException, BookieException, InterruptedException {
 		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
 		
-		ByteBuf entry = generateEntry(ledgerId, entryId);	
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);	
 		byte[] dst = new byte[data.length];
 		entry.getBytes(16, dst);
 		
@@ -343,11 +342,11 @@ public class BookieTest {
 	public void getListOfEntriesOfLedgerTest() throws NoLedgerException, IOException, BookieException, InterruptedException {
 		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
 		
-		ByteBuf buf1 = generateEntry(ledgerId, entryId+1L);
-		ByteBuf buf2 = generateEntry(ledgerId, entryId+2L);
-		ByteBuf buf3 = generateEntry(ledgerId, entryId+3L);
+		ByteBuf buf1 = TestUtil.generateEntry(ledgerId, entryId+1L);
+		ByteBuf buf2 = TestUtil.generateEntry(ledgerId, entryId+2L);
+		ByteBuf buf3 = TestUtil.generateEntry(ledgerId, entryId+3L);
 		
-		ByteBuf entry = generateEntry(ledgerId, entryId);	
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);	
 		byte[] dst = new byte[data.length];
 		entry.getBytes(16, dst);
 		
@@ -388,14 +387,5 @@ public class BookieTest {
 		System.out.println("Actual: " + actual + "\n");
 		
 		assertEquals(entryId, actual);
-	}
-	
-	private ByteBuf generateEntry(long ledgerId, long entryId) {
-		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
-		ByteBuf buf = Unpooled.buffer(8 + 8 + data.length);
-		buf.writeLong(ledgerId);
-		buf.writeLong(entryId);
-		buf.writeBytes(data);
-		return buf;
 	}
 }
