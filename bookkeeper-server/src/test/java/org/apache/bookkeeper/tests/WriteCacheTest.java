@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.bookkeeper.bookie.storage.ldb.WriteCache;
-import org.apache.bookkeeper.tests.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

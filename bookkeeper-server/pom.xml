@@ -23,6 +23,10 @@
 	<artifactId>bookkeeper-server</artifactId>
 	<name>Apache BookKeeper :: Server</name>
 
+	<properties>
+		<maven.javadoc.skip>true</maven.javadoc.skip>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.bookkeeper</groupId>
