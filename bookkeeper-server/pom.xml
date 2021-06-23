@@ -22,10 +22,6 @@
 
 	<artifactId>bookkeeper-server</artifactId>
 	<name>Apache BookKeeper :: Server</name>
-	
-	<properties>
-		<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
-	</properties>
 
 	<dependencies>
 		<dependency>
