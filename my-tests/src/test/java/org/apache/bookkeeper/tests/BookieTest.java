@@ -17,6 +17,7 @@ import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
 import org.apache.bookkeeper.bookie.InterleavedLedgerStorage;
 import org.apache.bookkeeper.conf.ServerConfiguration;
+import org.apache.bookkeeper.tests.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

@@ -1,4 +1,4 @@
-package org.apache.bookkeeper.tests;
+package org.apache.bookkeeper.tests.util;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -15,21 +15,21 @@ import io.netty.buffer.Unpooled;
 public class TestUtil {
 
 	public static ServerConfiguration getConfiguration() throws SocketException {
-		ServerConfiguration confReturn = new ServerConfiguration();
-		confReturn.setTLSEnabledProtocols("TLSv1.2,TLSv1.1");
-		confReturn.setJournalFlushWhenQueueEmpty(true);
-		confReturn.setJournalFormatVersionToWrite(5);
-		confReturn.setAllowEphemeralPorts(true);
-		confReturn.setBookiePort(0);
-		confReturn.setGcWaitTime(1000);
-		confReturn.setDiskUsageThreshold(0.999f);
-		confReturn.setDiskUsageWarnThreshold(0.99f);
-		confReturn.setAllocatorPoolingPolicy(PoolingPolicy.UnpooledHeap);
-		confReturn.setProperty(DbLedgerStorage.WRITE_CACHE_MAX_SIZE_MB, 4);
-		confReturn.setProperty(DbLedgerStorage.READ_AHEAD_CACHE_MAX_SIZE_MB, 4);
-		confReturn.setListeningInterface(getLoopbackInterfaceName());
-		confReturn.setAllowLoopback(true);
-		return confReturn;
+		ServerConfiguration conf = new ServerConfiguration();
+		conf.setTLSEnabledProtocols("TLSv1.2,TLSv1.1");
+		conf.setJournalFlushWhenQueueEmpty(true);
+		conf.setJournalFormatVersionToWrite(5);
+		conf.setAllowEphemeralPorts(true);
+		conf.setBookiePort(0);
+		conf.setGcWaitTime(1000);
+		conf.setDiskUsageThreshold(0.999f);
+		conf.setDiskUsageWarnThreshold(0.99f);
+		conf.setAllocatorPoolingPolicy(PoolingPolicy.UnpooledHeap);
+		conf.setProperty(DbLedgerStorage.WRITE_CACHE_MAX_SIZE_MB, 4);
+		conf.setProperty(DbLedgerStorage.READ_AHEAD_CACHE_MAX_SIZE_MB, 4);
+		conf.setListeningInterface(getLoopbackInterfaceName());
+		conf.setAllowLoopback(true);
+		return conf;
 	}
 
 	private static String getLoopbackInterfaceName() throws SocketException {
