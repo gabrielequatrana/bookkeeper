@@ -15,7 +15,6 @@
 	<name>Apache Bookkeeper :: MyTests</name>
 
 	<properties>
-		<asdusdi>a</asdusdi>
 		<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 
