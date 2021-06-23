@@ -25,6 +25,7 @@
 
 	<properties>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<asd>asd</asd>
 	</properties>
 
 	<dependencies>
