@@ -1024,7 +1024,6 @@
 	</build>
 
 	<profiles>
-
 		<profile>
 			<id>coverageProfile</id>
 			<activation>
@@ -1049,6 +1048,6 @@
 				</plugins>
 			</build>
 		</profile>
-
 	</profiles>
+	
 </project>
