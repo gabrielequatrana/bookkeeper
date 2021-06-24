@@ -10,4 +10,4 @@ addons:
         token: "f9a6955fed7d163379bce04db40367924cd6d954"
   
 script:
-    - mvn "-Dtest=org/apache/bookkeeper/tests/*Test" -DfailIfNoTests=false clean verify -e org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=gabrielequatrana_bookkeeper
+    - mvn clean verify -e org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=gabrielequatrana_bookkeeper
