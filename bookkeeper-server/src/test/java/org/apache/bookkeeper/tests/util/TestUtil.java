@@ -1,4 +1,4 @@
-package org.apache.bookkeeper.tests;
+package org.apache.bookkeeper.tests.util;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;

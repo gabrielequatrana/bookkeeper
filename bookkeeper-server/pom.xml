@@ -25,7 +25,6 @@
 
 	<properties>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
-		<asd>asd</asd>
 	</properties>
 
 	<dependencies>
@@ -188,6 +187,11 @@
 			<artifactId>pitest-maven</artifactId>
 			<version>1.6.2</version>
 			<type>maven-plugin</type>
+		</dependency>
+		
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 		</dependency>
 		
 	</dependencies>
