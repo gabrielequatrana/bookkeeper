@@ -1,4 +1,4 @@
-package org.apache.bookkeeper.tests.bookie.test;
+package org.apache.bookkeeper.tests.bookie;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,14 +28,13 @@ import org.junit.runners.Parameterized.Parameters;
 import io.netty.buffer.ByteBuf;
 
 @RunWith(Parameterized.class)
-public class BookieReadEntryTest {
+public class BookieReadLastAddConfirmedTest {
 
 	// Bookie instance
 	private Bookie bookie;
 
 	// Test parameters
 	private long ledgerId;
-	private long entryId;
 	private Class<? extends Exception> expectedException;
 
 	// Rule to make temporary folders
@@ -51,20 +50,18 @@ public class BookieReadEntryTest {
 	private File ledgerDir;
 	private ServerConfiguration conf;
 
-	public BookieReadEntryTest(long ledgerId, long entryId, Class<? extends Exception> expectedException) {
-		this.ledgerId = ledgerId;
-		this.entryId = entryId;
-		this.expectedException = expectedException;
-	}
+	public BookieReadLastAddConfirmedTest(long ledgerId, Class<? extends Exception> expectedException) {
+			this.ledgerId = ledgerId;
+			this.expectedException = expectedException;
+		}
 
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
 			// Minimal test suite
-			{ 1L, 1L, null },
-			{ 0L, 1L, null },
-			{ -1L, 0L, IllegalArgumentException.class },
-			{ -2L, 1L, IllegalArgumentException.class },
+			{ 1L, null },
+			{ 0L, null },
+			{ -1L, IllegalArgumentException.class },
 		});
 	}
 
@@ -96,42 +93,37 @@ public class BookieReadEntryTest {
 	}
 
 	@Test
-	public void readEntryTest() throws IOException, BookieException, InterruptedException {
+	public void readLastAddConfirmedTest() throws IOException, BookieException, InterruptedException {
 		System.out.println("\n**************** TEST ****************\n");
-		
-		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);
+
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, 1L);
 		byte[] dst = new byte[10];
 		entry.getBytes(16, dst);
 
-		System.out.println("------------- ADD -------------");
+		System.out.println("\n------------- ADD -------------");
 
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);
 			System.out.println("Exception raised: " + expectedException.getName());
 		}
-		
+
 		System.out.println("Ledger ID: " + ledgerId);
-		System.out.println("Entry ID: " + entryId);
+		System.out.println("Entry ID: " + 1L);
 		System.out.println("Entry Data: " + new String(dst, StandardCharsets.UTF_8) + "\n");
 
 		CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
 		bookie.addEntry(entry, false, (rc, lid, eid, addr, c) -> writeFuture.complete(rc), null, new byte[0]);
 
-		ByteBuf actual = bookie.readEntry(ledgerId, entryId);
-		byte[] actualDst = new byte[10];
-		actual.getBytes(16, actualDst);
+		long actual = bookie.readLastAddConfirmed(ledgerId);
 
 		System.out.println("\n------------- READ -------------");
-		System.out.println("Read Entry Data: " + new String(actualDst, StandardCharsets.UTF_8));
-
-		String expectedData = new String(dst, StandardCharsets.UTF_8);
-		String actualData = new String(actualDst, StandardCharsets.UTF_8);
+		System.out.println("Last Long Added: " + actual);
 
 		System.out.println("\n------------ RESULT ------------");
-		System.out.println("Expected Data: " + expectedData);
-		System.out.println("Actual Data: " + actualData);
+		System.out.println("Expected: " + entry.getLong(15));
+		System.out.println("Actual: " + actual + "\n");
 
-		assertEquals(expectedData, actualData);
+		assertEquals(entry.getLong(16), actual);
 		
 		System.out.println("\n**************************************\n");
 	}

@@ -1,4 +1,4 @@
-package org.apache.bookkeeper.tests.writecache.test;
+package org.apache.bookkeeper.tests.writecache;
 
 import static org.junit.Assert.assertTrue;
 

@@ -1,6 +1,6 @@
-package org.apache.bookkeeper.tests.bookie.test;
+package org.apache.bookkeeper.tests.bookie;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,15 +28,13 @@ import org.junit.runners.Parameterized.Parameters;
 import io.netty.buffer.ByteBuf;
 
 @RunWith(Parameterized.class)
-public class BookieSetExcplicitLacTest {
+public class BookieGetExplicitLacTest {
 
 	// Bookie instance
 	private Bookie bookie;
 
 	// Test parameters
-	private ByteBuf entry;
-	private Object ctx;
-	private byte[] masterKey;
+	private long ledgerId;
 	private Class<? extends Exception> expectedException;
 
 	// Rule to make temporary folders
@@ -52,10 +50,8 @@ public class BookieSetExcplicitLacTest {
 	private File ledgerDir;
 	private ServerConfiguration conf;
 
-	public BookieSetExcplicitLacTest(ByteBuf entry, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
-		this.entry = entry;
-		this.ctx = ctx;
-		this.masterKey = masterKey;
+	public BookieGetExplicitLacTest(long ledgerId, Class<? extends Exception> expectedException) {
+		this.ledgerId = ledgerId;
 		this.expectedException = expectedException;
 	}
 
@@ -63,12 +59,9 @@ public class BookieSetExcplicitLacTest {
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
 			// Minimal test suite
-			{ TestUtil.generateEntry(1L, 1L), null, new byte[0], null },
-			{ TestUtil.generateEntry(0L, 1L), "ledger-test", new byte[0], null },
-			{ null, null, new byte[0], NullPointerException.class},
-			{ TestUtil.generateEntry(-1L, -1L), new String(), new byte[0], IllegalArgumentException.class },
-			{ TestUtil.generateEntry(2L, -1L), "ledger-test", new byte[1], IndexOutOfBoundsException.class },
-			{ TestUtil.generateEntry(1L, 2L), new String(), null, NullPointerException.class } 
+			{ 1L, null },
+			{ 0L, null },
+			{ -1L, IllegalArgumentException.class },
 		});
 	}
 
@@ -100,37 +93,42 @@ public class BookieSetExcplicitLacTest {
 	}
 
 	@Test
-	public void setExcplicitLacTest() throws IOException, BookieException, InterruptedException {
+	public void getExplicitLacTest() throws IOException, InterruptedException, BookieException {
 		System.out.println("\n**************** TEST ****************\n");
-		
-		long usableSpace = ledgerDir.getUsableSpace();
 
+		ByteBuf entry = TestUtil.generateEntry(ledgerId, 1L);
 		byte[] dst = new byte[10];
-		if (entry != null) {
-			entry.getBytes(16, dst);
-		}
+		entry.getBytes(16, dst);
 
-		System.out.println("------------- SET -------------");
+		System.out.println("\n------------- SET -------------");
 
 		if (expectedException == NullPointerException.class) {
 			exceptionRule.expect(expectedException);
 			System.out.println("Exception raised: " + expectedException.getName());
 		}
 
-		System.out.println("Entry Data: " + new String(dst, StandardCharsets.UTF_8));
-		System.out.println("CTX: " + ctx);
-		System.out.println("Master Key: " + masterKey.length + "\n");
+		System.out.println("Ledger ID: " + ledgerId);
+		System.out.println("Entry ID: " + 1L);
+		System.out.println("Entry Data: " + new String(dst, StandardCharsets.UTF_8) + "\n");
 
 		CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
-		bookie.setExplicitLac(entry, (rc, lid, eid, addr, c) -> writeFuture.complete(rc), ctx, masterKey);
+		bookie.setExplicitLac(entry, (rc, lid, eid, addr, c) -> writeFuture.complete(rc), null, new byte[0]);
 
-		Thread.sleep(1000);
+		ByteBuf actual = bookie.getExplicitLac(ledgerId);
+		byte[] actualDst = new byte[10];
+		actual.getBytes(16, actualDst);
+
+		System.out.println("\n------------- GET -------------");
+		System.out.println("Read Entry Data: " + new String(actualDst, StandardCharsets.UTF_8));
+
+		String expectedData = new String(dst, StandardCharsets.UTF_8);
+		String actualData = new String(actualDst, StandardCharsets.UTF_8);
 
 		System.out.println("\n------------ RESULT ------------");
-		System.out.println("Usable Space before: " + usableSpace);
-		System.out.println("Usable Space after: " + ledgerDir.getUsableSpace());
+		System.out.println("Expected Data: " + expectedData);
+		System.out.println("Actual Data: " + actualData + "\n");
 
-		assertTrue(ledgerDir.getUsableSpace() < usableSpace);
+		assertEquals(expectedData, actualData);
 		
 		System.out.println("\n**************************************\n");
 	}

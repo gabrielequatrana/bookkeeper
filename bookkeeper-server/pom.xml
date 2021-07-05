@@ -181,19 +181,19 @@
 			<version>${project.parent.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.pitest</groupId>
 			<artifactId>pitest-maven</artifactId>
 			<version>1.6.2</version>
 			<type>maven-plugin</type>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
-		
+
 	</dependencies>
 	<build>
 		<plugins>
@@ -279,27 +279,7 @@
 					<rerunFailingTestsCount>${testRetryCount}</rerunFailingTestsCount>
 				</configuration>
 			</plugin>
-			
-			<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<argLine>
-						-javaagent:"${basedir}\..\lib\ba-dua-agent-rt-0.4.1-SNAPSHOT-all.jar"
-						-Xbootclasspath/p:"${basedir}\..\lib\ba-dua-agent-rt-0.4.1-SNAPSHOT-all.jar"
-					</argLine>
-				</configuration>
-			</plugin>
-			-->
-			
+
 			<plugin>
 				<groupId>org.pitest</groupId>
 				<artifactId>pitest-maven</artifactId>
@@ -311,9 +291,22 @@
 						<param>org.apache.bookkeeper.bookie.storage.ldb.WriteCache</param>
 					</targetClasses>
 					<targetTests>
-						<param>org.apache.bookkeeper.tests.BookieTest</param>
-						<param>org.apache.bookkeeper.tests.WriteCacheTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieAddEntryTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieFenceAndRecoveryAddEntryTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieGetExplicitLacTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieGetListOfEntriesOfLedgerTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieReadEntryTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieReadLastAddConfirmedTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieSetExplicitLacTest</param>
+						<param>org.apache.bookkeeper.tests.writecache.WriteCacheGetTest</param>
+						<param>org.apache.bookkeeper.tests.writecache.WriteCachePutTest</param>
 					</targetTests>
+					<avoidCallsTo>
+						<avoidCallsTo>java.util.logging</avoidCallsTo>
+						<avoidCallsTo>org.apache.log4j</avoidCallsTo>
+						<avoidCallsTo>org.slf4j</avoidCallsTo>
+						<avoidCallsTo>org.apache.commons.logging</avoidCallsTo>
+					</avoidCallsTo>
 				</configuration>
 			</plugin>
 
@@ -322,7 +315,7 @@
 
 	<profiles>
 		<profile>
-			<id>mutation</id>
+			<id>mutation-coverage</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
 			</activation>

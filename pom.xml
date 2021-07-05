@@ -66,7 +66,7 @@
 		<module>shaded</module>
 		<module>microbenchmarks</module>
 
-		<module>my-tests</module>
+		<module>bookkeeper-tests</module>
 	</modules>
 	<mailingLists>
 		<mailingList>

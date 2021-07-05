@@ -11,8 +11,8 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>my-tests</artifactId>
-	<name>Apache Bookkeeper :: MyTests</name>
+	<artifactId>bookkeeper-tests</artifactId>
+	<name>Apache Bookkeeper :: Tests</name>
 
 	<properties>
 		<sonar.coverage.jacoco.xmlReportPaths>${basedir}/../${aggregate.report.dir}</sonar.coverage.jacoco.xmlReportPaths>
