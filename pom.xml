@@ -204,7 +204,7 @@
 		<sonar.java.source>11</sonar.java.source>
 		<sonar.java.file.suffixes>.java</sonar.java.file.suffixes>
 		<sonar.verbose>true</sonar.verbose>
-		<aggregate.report.dir>my-tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
+		<aggregate.report.dir>bookkeeper-tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
 		<redirectTestOutputToFile>true</redirectTestOutputToFile>
 
 		<!-- Jacoco report -->
