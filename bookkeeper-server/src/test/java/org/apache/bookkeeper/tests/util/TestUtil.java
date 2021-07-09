@@ -1,10 +1,12 @@
 package org.apache.bookkeeper.tests.util;
 
+import java.io.File;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import org.apache.bookkeeper.bookie.InterleavedLedgerStorage;
 import org.apache.bookkeeper.bookie.storage.ldb.DbLedgerStorage;
 import org.apache.bookkeeper.common.allocator.PoolingPolicy;
 import org.apache.bookkeeper.conf.ServerConfiguration;
@@ -13,8 +15,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
 public class TestUtil {
+	
+	private TestUtil() {
+		
+	}
 
-	public static ServerConfiguration getConfiguration() throws SocketException {
+	public static ServerConfiguration getConfiguration(File journalDir, File ledgerDir) throws SocketException {
+		float usage = 1.0f - ((float) ledgerDir.getUsableSpace()) / ledgerDir.getTotalSpace();
+		
 		ServerConfiguration confReturn = new ServerConfiguration();
 		confReturn.setTLSEnabledProtocols("TLSv1.2,TLSv1.1");
 		confReturn.setJournalFlushWhenQueueEmpty(true);
@@ -29,6 +37,13 @@ public class TestUtil {
 		confReturn.setProperty(DbLedgerStorage.READ_AHEAD_CACHE_MAX_SIZE_MB, 4);
 		confReturn.setListeningInterface(getLoopbackInterfaceName());
 		confReturn.setAllowLoopback(true);
+		confReturn.setJournalDirsName(new String[] { journalDir.getAbsolutePath() });
+		confReturn.setLedgerDirNames(new String[] { ledgerDir.getAbsolutePath() });
+		confReturn.setMetadataServiceUri(null);
+		confReturn.setDiskUsageThreshold(usage / 2);
+		confReturn.setDiskUsageWarnThreshold(usage / 3);
+		confReturn.setMinUsableSizeForEntryLogCreation(Long.MIN_VALUE);
+		confReturn.setLedgerStorageClass(InterleavedLedgerStorage.class.getName());
 		return confReturn;
 	}
 
@@ -50,5 +65,23 @@ public class TestUtil {
 		buf.writeLong(entryId);
 		buf.writeBytes(data);
 		return buf;
+	}
+	
+	public static ByteBuf generateEntry(int entrySize, long ledgerId, long entryId) {
+		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
+		ByteBuf buf = Unpooled.buffer(entrySize);
+		buf.writeLong(ledgerId);
+		buf.writeLong(entryId);
+		buf.writeBytes(data);
+		buf.writeBytes(new byte[entrySize - 8 - 8 - data.length]);
+		return buf;
+	}
+	
+	public static ByteBuf validEntry() {
+		return generateEntry(1L, 1L);
+	}
+	
+	public static ByteBuf invalidEntry() {
+		return generateEntry(-1L, -1L);
 	}
 }

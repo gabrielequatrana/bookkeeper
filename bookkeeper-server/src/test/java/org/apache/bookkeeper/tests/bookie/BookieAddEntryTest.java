@@ -4,7 +4,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -12,8 +11,8 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.bookkeeper.bookie.Bookie;
 import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
-import org.apache.bookkeeper.bookie.InterleavedLedgerStorage;
 import org.apache.bookkeeper.conf.ServerConfiguration;
+import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
 import org.apache.bookkeeper.tests.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -36,26 +35,28 @@ public class BookieAddEntryTest {
 	// Test parameters
 	private ByteBuf entry;
 	private boolean ackBeforeSync;
+	private WriteCallback cb;
 	private Object ctx;
 	private byte[] masterKey;
 	private Class<? extends Exception> expectedException;
 
 	// Rule to make temporary folders
-	@Rule
-	public final TemporaryFolder testDir = new TemporaryFolder();
+	@Rule public final TemporaryFolder testDir = new TemporaryFolder();
 
 	// Rule to manage exceptions
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
+	@Rule public ExpectedException exceptionRule = ExpectedException.none();
 
 	// Test environment
 	private File journalDir;
 	private File ledgerDir;
 	private ServerConfiguration conf;
+	private static CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
+	private static WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
 
-	public BookieAddEntryTest(ByteBuf entry, boolean ackBeforeSync, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
+	public BookieAddEntryTest(ByteBuf entry, boolean ackBeforeSync, WriteCallback cb, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
 		this.entry = entry;
 		this.ackBeforeSync = ackBeforeSync;
+		this.cb = cb;
 		this.ctx = ctx;
 		this.masterKey = masterKey;
 		this.expectedException = expectedException;
@@ -64,75 +65,54 @@ public class BookieAddEntryTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
+			
 			// Minimal test suite
-			{ TestUtil.generateEntry(1L, 1L), false, null, new byte[0], null },
-			{ TestUtil.generateEntry(0L, 1L), false, "ledger-test", new byte[0], null },
-			{ null, false, null, new byte[0], NullPointerException.class},
-			{ TestUtil.generateEntry(-1L, -1L), false, new String(), new byte[0], IllegalArgumentException.class },
-			{ TestUtil.generateEntry(2L, -1L), true, "ledger-test", new byte[1], IndexOutOfBoundsException.class },
-			{ TestUtil.generateEntry(1L, 2L), true, new String(), null, NullPointerException.class } 
+			{ TestUtil.validEntry(), false, null, null, new byte[0], null },
+			{ TestUtil.validEntry(), false, callback, "ledger-test", new byte[0], null },
+			{ null, false, callback, null, new byte[0], NullPointerException.class},
+			{ TestUtil.invalidEntry(), false, null, new String(), new byte[0], IllegalArgumentException.class },
+			{ TestUtil.invalidEntry(), true, callback, "ledger-test", new byte[1], IllegalArgumentException.class },
+			{ TestUtil.validEntry(), true, callback, new String(), null, Bookie.NoLedgerException.class },
+			
+			// Added after the improvement of the test suite
+			{ TestUtil.validEntry(), false, callback, null, new byte[1], null },
 		});
 	}
 
+	// Setup the test environment
 	@Before
 	public void setUp() throws IOException, InterruptedException, BookieException {
 		journalDir = testDir.newFolder("journal");
 		ledgerDir = testDir.newFolder("ledger");
-
-		float usage = 1.0f - ((float) ledgerDir.getUsableSpace()) / ledgerDir.getTotalSpace();
-
-		conf = TestUtil.getConfiguration();
-		conf.setJournalDirsName(new String[] { journalDir.getAbsolutePath() });
-		conf.setLedgerDirNames(new String[] { ledgerDir.getAbsolutePath() });
-		conf.setMetadataServiceUri(null);
-		conf.setDiskUsageThreshold(usage / 2);
-		conf.setDiskUsageWarnThreshold(usage / 3);
-		conf.setMinUsableSizeForEntryLogCreation(Long.MIN_VALUE);
-		conf.setLedgerStorageClass(InterleavedLedgerStorage.class.getName());
-
+		conf = TestUtil.getConfiguration(journalDir, ledgerDir);
+		
 		bookie = new BookieImpl(conf);
 		bookie.start();
-	}
-
-	@After
-	public void cleanUp() {
-		if (bookie != null) {
-			bookie.shutdown();
-		}
-	}
-
-	@Test
-	public void addEntryTest() throws IOException, BookieException, InterruptedException {
-		System.out.println("\n**************** TEST ****************\n");
-
-		long usableSpace = ledgerDir.getUsableSpace();
-		byte[] dst = new byte[10];
-		if (entry != null) {
-			entry.getBytes(16, dst);
-		}
 		
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);
-			System.out.println("Exception raised: " + expectedException.getName());
 		}
+	}
 
-		System.out.println("------------- ADD -------------");
-		System.out.println("Entry Data: " + new String(dst, StandardCharsets.UTF_8));
-		System.out.println("Ack Before Sync: " + ackBeforeSync);
-		System.out.println("CTX: " + ctx);
-		System.out.println("Master Key: " + masterKey.length + "\n");
+	// Cleanup the test environment
+	@After
+	public void cleanUp() {
+		bookie.shutdown();
+	}
+	
+	@Test
+	public void addEntryTest() throws IOException, BookieException, InterruptedException {
+		
+		// Get free space before adding a new entry
+		long usableSpace = ledgerDir.getUsableSpace();
+		
+		// Add the entry to the bookie
+		bookie.addEntry(entry, ackBeforeSync, cb, ctx, masterKey);
 
-		CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
-		bookie.addEntry(entry, ackBeforeSync, (rc, lid, eid, addr, c) -> writeFuture.complete(rc), ctx, masterKey);
-
+		// Sleep for 1 second
 		Thread.sleep(1000);
 
-		System.out.println("\n------------ RESULT ------------");
-		System.out.println("Usable Space before: " + usableSpace);
-		System.out.println("Usable Space after: " + ledgerDir.getUsableSpace());
-
+		// Assert that the free space is less than before adding the entry
 		assertTrue(ledgerDir.getUsableSpace() < usableSpace);
-		
-		System.out.println("\n**************************************\n");
 	}
 }

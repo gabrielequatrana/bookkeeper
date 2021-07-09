@@ -26,7 +26,7 @@ public class WriteCacheGetTest {
 	// WriteCache instance
 	private WriteCache writeCache;
 
-	// Cache configs
+	// Cache configuration
 	private static final int ENTRY_SIZE = 1024;
 	private static final int MAX_ENTRIES = 10;
 	private static final int CACHE_SIZE = ENTRY_SIZE * MAX_ENTRIES;
@@ -35,9 +35,12 @@ public class WriteCacheGetTest {
 	private long ledgerId;
 	private long entryId;
 	private Class<? extends Exception> expectedException;
+	
+	// Test environment
+	private ByteBuf entry;
 
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
+	// Rule to manage expected exception
+	@Rule public ExpectedException exceptionRule = ExpectedException.none();
 
 	public WriteCacheGetTest(long ledgerId, long entryId, Class<? extends Exception> expectedException) {
 		this.ledgerId = ledgerId;
@@ -55,12 +58,18 @@ public class WriteCacheGetTest {
 		});
 	}
 
+	// Setup the test environment
 	@Before
-	public void setUp() {
-		System.out.println("\n***************** TEST *****************");
+	public void setUp() {	
 		writeCache = new WriteCache(ByteBufAllocator.DEFAULT, CACHE_SIZE);
+		entry = TestUtil.generateEntry(ENTRY_SIZE, ledgerId, entryId);
+		
+		if (expectedException != null) {
+			exceptionRule.expect(expectedException);
+		}
 	}
 
+	// Cleanup the test environment
 	@After
 	public void cleanUp() {
 		writeCache.clear();
@@ -69,43 +78,28 @@ public class WriteCacheGetTest {
 
 	@Test
 	public void getTest() {
-		
-		ByteBuf entry = TestUtil.generateEntry(ledgerId, entryId);
 
-		if (expectedException != null) {
-			exceptionRule.expect(expectedException);
-			System.out.println("Exception raised: " + expectedException.getName());
-		}
-
-		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
-		byte[] dst = new byte[data.length];
+		// Get entry data
+		byte[] dst = new byte[ENTRY_SIZE-16];
 		entry.getBytes(16, dst);
 
-		System.out.println("------------- PUT -------------");
-		System.out.println("Ledger ID: " + ledgerId);
-		System.out.println("Entry ID: " + entryId);
-		System.out.println("Entry Data: " + new String(dst, StandardCharsets.UTF_8));
-
+		// Add the entry to the cache
 		boolean result = writeCache.put(ledgerId, entryId, entry);
 		if (!result) {
+			// Entry was not added to the cache
 			throw new IndexOutOfBoundsException();
 		}
 
-		System.out.println("\n------------ GET ------------");
-
+		// Retrieve the entry from the cache
 		ByteBuf bufGet = writeCache.get(ledgerId, entryId);
-		byte[] dstGet = new byte[data.length];
+		byte[] dstGet = new byte[ENTRY_SIZE-16];
 		bufGet.getBytes(16, dstGet);
-
+		
+		// Convert data into string
 		String expected = new String(dst, StandardCharsets.UTF_8);
 		String actual = new String(dstGet, StandardCharsets.UTF_8);
 
-		System.out.println("Data get: " + actual);
-
-		System.out.println("\n----------- RESULT -----------");
-		System.out.println("Expected: " + expected);
-		System.out.println("Actual: " + actual);
-
+		// Assert that the added entry is the same as the retrieved entry from the cache
 		assertEquals(expected, actual);
 	}
 }

@@ -1,6 +1,6 @@
 package org.apache.bookkeeper.tests.bookie;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,14 +29,16 @@ import org.junit.runners.Parameterized.Parameters;
 import io.netty.buffer.ByteBuf;
 
 @RunWith(Parameterized.class)
-public class BookieReadEntryTest {
+public class BookieRecoveryAddEntryTest {
 
 	// Bookie instance
 	private Bookie bookie;
 
 	// Test parameters
-	private long ledgerId;
-	private long entryId;
+	private ByteBuf entry;
+	private WriteCallback cb;
+	private Object ctx;
+	private byte[] masterKey;
 	private Class<? extends Exception> expectedException;
 
 	// Rule to make temporary folders
@@ -49,13 +51,14 @@ public class BookieReadEntryTest {
 	private File journalDir;
 	private File ledgerDir;
 	private ServerConfiguration conf;
-	private ByteBuf entry;
-	private CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
-	private WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
-
-	public BookieReadEntryTest(long ledgerId, long entryId, Class<? extends Exception> expectedException) {
-		this.ledgerId = ledgerId;
-		this.entryId = entryId;
+	private static CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
+	private static WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
+	
+	public BookieRecoveryAddEntryTest(ByteBuf entry, WriteCallback cb, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
+		this.entry = entry;
+		this.cb = cb;
+		this.ctx = ctx;
+		this.masterKey = masterKey;
 		this.expectedException = expectedException;
 	}
 
@@ -63,10 +66,15 @@ public class BookieReadEntryTest {
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
 			// Minimal test suite
-			{ 1L, 0L, null },
-			{ 0L, 1L, null },
-			{ -1L, 0L, IllegalArgumentException.class },
-			{ -2L, 1L, IllegalArgumentException.class },
+			{ TestUtil.validEntry(), null, null, new byte[0], null },
+			{ null, callback, null, new byte[0], NullPointerException.class },
+			{ TestUtil.validEntry(), callback, "ledger-test", new byte[0], null },
+			{ TestUtil.invalidEntry(), callback, new String(), new byte[0], IllegalArgumentException.class },
+			{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], IllegalArgumentException.class },
+			{ TestUtil.validEntry(), null, new String(), null, Bookie.NoLedgerException.class },
+			
+			// Added after
+			{ TestUtil.validEntry(), callback, null, new byte[1], null },
 		});
 	}
 
@@ -80,8 +88,6 @@ public class BookieReadEntryTest {
 		bookie = new BookieImpl(conf);
 		bookie.start();
 		
-		entry = TestUtil.generateEntry(ledgerId, entryId);
-		
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);
 		}
@@ -94,25 +100,24 @@ public class BookieReadEntryTest {
 	}
 
 	@Test
-	public void readEntryTest() throws IOException, BookieException, InterruptedException {
+	public void recoveryAddEntryTest() throws IOException, BookieException, InterruptedException {
 		
-		// Get entry data
-		byte[] dst = new byte[entry.capacity() - 16];
-		entry.getBytes(16, dst);
+		// Get free space before adding a new entry
+		long usableSpace = ledgerDir.getUsableSpace();
 
-		// Add the entry to the bookie
-		bookie.addEntry(entry, false, callback, null, new byte[0]);
+		// Get ledger ID from the entry
+		long ledgerId = entry.getLong(0);
 
-		// Retrieve the entry from the bookie
-		ByteBuf actual = bookie.readEntry(ledgerId, entryId);
-		byte[] actualDst = new byte[actual.capacity() - 16];
-		actual.getBytes(16, actualDst);
+		// Fence the ledger before adding the entry to test the method recoveryAddEntry(..)
+		bookie.fenceLedger(ledgerId, masterKey);
+		
+		// Add the entry to the bookie 
+		bookie.recoveryAddEntry(entry, cb, ctx, masterKey);
 
-		// Convert data into string
-		String expectedData = new String(dst, StandardCharsets.UTF_8);
-		String actualData = new String(actualDst, StandardCharsets.UTF_8);
+		// Sleep for 1 second
+		Thread.sleep(1000);
 
-		// Assert that the added entry is the same as the retrieved entry from the bookie
-		assertEquals(expectedData, actualData);
+		// Assert that the free space is less than before adding the entry
+		assertTrue(ledgerDir.getUsableSpace() < usableSpace);
 	}
 }

@@ -1,4 +1,4 @@
-package org.apache.bookkeeper.tests.bookie;
+	package org.apache.bookkeeper.tests.bookie;
 
 import static org.junit.Assert.assertEquals;
 
@@ -14,6 +14,7 @@ import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
 import org.apache.bookkeeper.bookie.InterleavedLedgerStorage;
 import org.apache.bookkeeper.conf.ServerConfiguration;
+import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
 import org.apache.bookkeeper.tests.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -38,22 +39,23 @@ public class BookieReadLastAddConfirmedTest {
 	private Class<? extends Exception> expectedException;
 
 	// Rule to make temporary folders
-	@Rule
-	public final TemporaryFolder testDir = new TemporaryFolder();
+	@Rule public final TemporaryFolder testDir = new TemporaryFolder();
 
 	// Rule to manage exceptions
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
+	@Rule public ExpectedException exceptionRule = ExpectedException.none();
 
 	// Test environment
 	private File journalDir;
 	private File ledgerDir;
 	private ServerConfiguration conf;
+	private ByteBuf entry;
+	private CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
+	private WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
 
 	public BookieReadLastAddConfirmedTest(long ledgerId, Class<? extends Exception> expectedException) {
-			this.ledgerId = ledgerId;
-			this.expectedException = expectedException;
-		}
+		this.ledgerId = ledgerId;
+		this.expectedException = expectedException;
+	}
 
 	@Parameters
 	public static Collection<Object[]> getParameters() {
@@ -65,66 +67,39 @@ public class BookieReadLastAddConfirmedTest {
 		});
 	}
 
+	// Setup the test environment
 	@Before
 	public void setUp() throws IOException, InterruptedException, BookieException {
 		journalDir = testDir.newFolder("journal");
 		ledgerDir = testDir.newFolder("ledger");
-
-		float usage = 1.0f - ((float) ledgerDir.getUsableSpace()) / ledgerDir.getTotalSpace();
-
-		conf = TestUtil.getConfiguration();
-		conf.setJournalDirsName(new String[] { journalDir.getAbsolutePath() });
-		conf.setLedgerDirNames(new String[] { ledgerDir.getAbsolutePath() });
-		conf.setMetadataServiceUri(null);
-		conf.setDiskUsageThreshold(usage / 2);
-		conf.setDiskUsageWarnThreshold(usage / 3);
-		conf.setMinUsableSizeForEntryLogCreation(Long.MIN_VALUE);
-		conf.setLedgerStorageClass(InterleavedLedgerStorage.class.getName());
-
+		conf = TestUtil.getConfiguration(journalDir, ledgerDir);
+		
 		bookie = new BookieImpl(conf);
 		bookie.start();
+		
+		entry = TestUtil.generateEntry(ledgerId, 1L);
+		
+		if (expectedException != null) {
+			exceptionRule.expect(expectedException);
+		}
 	}
 
+	// Cleanup the test environment
 	@After
 	public void cleanUp() {
-		if (bookie != null) {
-			bookie.shutdown();
-		}
+		bookie.shutdown();
 	}
 
 	@Test
 	public void readLastAddConfirmedTest() throws IOException, BookieException, InterruptedException {
-		System.out.println("\n**************** TEST ****************\n");
 
-		ByteBuf entry = TestUtil.generateEntry(ledgerId, 1L);
-		byte[] dst = new byte[10];
-		entry.getBytes(16, dst);
+		// Add the entry to the bookie
+		bookie.addEntry(entry, false, callback, null, new byte[0]);
 
-		System.out.println("\n------------- ADD -------------");
-
-		if (expectedException != null) {
-			exceptionRule.expect(expectedException);
-			System.out.println("Exception raised: " + expectedException.getName());
-		}
-
-		System.out.println("Ledger ID: " + ledgerId);
-		System.out.println("Entry ID: " + 1L);
-		System.out.println("Entry Data: " + new String(dst, StandardCharsets.UTF_8) + "\n");
-
-		CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
-		bookie.addEntry(entry, false, (rc, lid, eid, addr, c) -> writeFuture.complete(rc), null, new byte[0]);
-
+		// Retrieve last long added from the bookie
 		long actual = bookie.readLastAddConfirmed(ledgerId);
 
-		System.out.println("\n------------- READ -------------");
-		System.out.println("Last Long Added: " + actual);
-
-		System.out.println("\n------------ RESULT ------------");
-		System.out.println("Expected: " + entry.getLong(15));
-		System.out.println("Actual: " + actual + "\n");
-
+		// Assert that the last long added is the same as the retrieved long from the bookie
 		assertEquals(entry.getLong(16), actual);
-		
-		System.out.println("\n**************************************\n");
 	}
 }

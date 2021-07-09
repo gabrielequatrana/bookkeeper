@@ -1,8 +1,8 @@
 package org.apache.bookkeeper.tests.writecache;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -19,7 +19,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 
 @RunWith(Parameterized.class)
 public class WriteCachePutTest {
@@ -27,7 +26,7 @@ public class WriteCachePutTest {
 	// WriteCache instance
 	private WriteCache writeCache;
 
-	// Cache configs
+	// Cache configuration
 	private static final int ENTRY_SIZE = 1024;
 	private static final int MAX_ENTRIES = 10;
 	private static final int CACHE_SIZE = ENTRY_SIZE * MAX_ENTRIES;
@@ -38,8 +37,8 @@ public class WriteCachePutTest {
 	private ByteBuf entry;
 	private Class<? extends Exception> expectedException;
 
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
+	// Rule to manage expected exception
+	@Rule public ExpectedException exceptionRule = ExpectedException.none();
 
 	public WriteCachePutTest(long ledgerId, long entryId, ByteBuf entry, Class<? extends Exception> expectedException) {
 		this.ledgerId = ledgerId;
@@ -52,20 +51,24 @@ public class WriteCachePutTest {
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
 			// Minimal test suite
-			{ 0L, 1L, TestUtil.generateEntry(1L, 1L), null },
-			{ -1L, 0L, TestUtil.generateEntry(-1L, 0L), IllegalArgumentException.class },
-			{ 0L, -1L, TestUtil.generateEntry(0L, -1L), IllegalArgumentException.class },
-			{ 1L, 2L, Unpooled.wrappedBuffer(new byte[CACHE_SIZE + 1]), IndexOutOfBoundsException.class },
+			{ 0L, 1L, TestUtil.generateEntry(ENTRY_SIZE, 0L, 1L), null },
+			{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE, -1L, 0L), IllegalArgumentException.class },
+			{ 0L, -1L, TestUtil.generateEntry(ENTRY_SIZE, 0L, -1L), IllegalArgumentException.class },
+			{ 1L, 0L, TestUtil.generateEntry(CACHE_SIZE + 1, 1L, 0L), IndexOutOfBoundsException.class },
 			{ 0L, 1L, null, NullPointerException.class }
 		});
 	}
 
+	// Setup the test environment
 	@Before
 	public void setUp() {
-		System.out.println("\n***************** TEST *****************");
 		writeCache = new WriteCache(ByteBufAllocator.DEFAULT, CACHE_SIZE);
+		if (expectedException != null) {
+			exceptionRule.expect(expectedException);
+		}
 	}
-
+	
+	// Cleanup the test environment
 	@After
 	public void cleanUp() {
 		writeCache.clear();
@@ -75,31 +78,23 @@ public class WriteCachePutTest {
 	@Test
 	public void putTest() {
 
-		if (expectedException != null) {
-			exceptionRule.expect(expectedException);
-			System.out.println("Exception raised: " + expectedException.getName());
-		}
+		// Get free space before adding a new entry
+		long spaceBefore = writeCache.count();
 
-		long countBefore = writeCache.count();
-		byte[] dst = new byte[10];
-		entry.getBytes(16, dst);
-
-		System.out.println("------------- PUT -------------");
-		System.out.println("Ledger ID: " + ledgerId);
-		System.out.println("Entry ID: " + entryId);
-		System.out.println("Entry Data: " + new String(dst, StandardCharsets.UTF_8));
-
+		// Add the entry to the cache
 		boolean result = writeCache.put(ledgerId, entryId, entry);
 		if (!result) {
+			// Entry was not added to the cache
 			throw new IndexOutOfBoundsException();
 		}
 
-		long countAfter = writeCache.count();
+		// Get free space after adding the entry
+		long spaceAfter = writeCache.count();
 
-		System.out.println("\n------------ RESULT ------------");
-		System.out.println("Count before: " + countBefore);
-		System.out.println("Count after: " + countAfter);
-
-		assertTrue(countAfter > countBefore);
+		// Assert that the free space is less than before adding the entry
+		assertTrue(spaceBefore < spaceAfter);
+		
+		// Assert that the size of the entry is equal to the size of the cache
+		assertEquals(entry.capacity(), writeCache.size());
 	}
 }
