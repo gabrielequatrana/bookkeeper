@@ -27,7 +27,7 @@ import org.junit.runners.Parameterized.Parameters;
 import io.netty.buffer.ByteBuf;
 
 @RunWith(Parameterized.class)
-public class BookieSetExcplicitLacTest {
+public class BookieSetExplicitLacTest {
 
 	// Bookie instance
 	private Bookie bookie;
@@ -52,7 +52,7 @@ public class BookieSetExcplicitLacTest {
 	private static CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
 	private static WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
 
-	public BookieSetExcplicitLacTest(ByteBuf entry, WriteCallback cb, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
+	public BookieSetExplicitLacTest(ByteBuf entry, WriteCallback cb, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
 		this.entry = entry;
 		this.cb = cb;
 		this.ctx = ctx;
@@ -71,8 +71,8 @@ public class BookieSetExcplicitLacTest {
 			{ TestUtil.invalidEntry(), null, "ledger-test", new byte[1], null },
 
 			// Added after the improvement of the test suite
-			//{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], null },
-			//{ TestUtil.validEntry(), callback, null, new byte[0], null },
+			{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], null },
+			{ TestUtil.validEntry(), callback, null, new byte[0], null },
 		});
 	}
 
@@ -98,7 +98,7 @@ public class BookieSetExcplicitLacTest {
 	}
 
 	@Test
-	public void setExcplicitLacTest() throws IOException, BookieException, InterruptedException {
+	public void setExplicitLacTest() throws IOException, BookieException, InterruptedException {
 		
 		// Get free space before adding a new entry
 		long usableSpace = ledgerDir.getUsableSpace();

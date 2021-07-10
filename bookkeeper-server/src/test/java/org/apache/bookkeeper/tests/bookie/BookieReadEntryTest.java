@@ -68,7 +68,7 @@ public class BookieReadEntryTest {
 			{ -1L, 0L, IllegalArgumentException.class },
 			
 			// Added after the improvement of the test suite
-			//{ -2L, 1L, IllegalArgumentException.class },
+			{ 0L, 0L, null },
 		});
 	}
 

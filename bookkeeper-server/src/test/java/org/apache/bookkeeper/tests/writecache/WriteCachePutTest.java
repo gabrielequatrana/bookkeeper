@@ -57,7 +57,7 @@ public class WriteCachePutTest {
 			{ 1L, 0L, null, NullPointerException.class },
 			
 			// Added after the improvement of the test suite
-			//{ 1L, 0L, TestUtil.generateEntry(CACHE_SIZE + 1, 1L, 0L), IndexOutOfBoundsException.class },
+			{ 1L, 0L, TestUtil.generateEntry(CACHE_SIZE + 1, 1L, 0L), IndexOutOfBoundsException.class },
 		});
 	}
 

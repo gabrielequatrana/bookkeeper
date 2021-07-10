@@ -51,8 +51,8 @@ public class WriteCacheGetLastEntryTest {
 		return Arrays.asList(new Object[][] {
 			// Minimal test suite
 			{ 1L, null },
-			{ -1L, IllegalArgumentException.class },
 			{ 0L, null },
+			{ -1L, IllegalArgumentException.class },
 		});
 	}
 
