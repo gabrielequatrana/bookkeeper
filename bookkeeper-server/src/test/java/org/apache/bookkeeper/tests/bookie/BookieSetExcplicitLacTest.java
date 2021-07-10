@@ -72,7 +72,8 @@ public class BookieSetExcplicitLacTest {
 
 			// Added after the improvement of the test suite
 			//{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], null },
-			//{ TestUtil.validEntry(), callback, null, new byte[0], null },});
+			//{ TestUtil.validEntry(), callback, null, new byte[0], null },
+		});
 	}
 
 	// Setup the test environment
