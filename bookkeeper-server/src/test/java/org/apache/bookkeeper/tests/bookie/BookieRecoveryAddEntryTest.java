@@ -4,7 +4,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -12,7 +11,6 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.bookkeeper.bookie.Bookie;
 import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
-import org.apache.bookkeeper.bookie.InterleavedLedgerStorage;
 import org.apache.bookkeeper.conf.ServerConfiguration;
 import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
 import org.apache.bookkeeper.tests.util.TestUtil;
@@ -65,16 +63,16 @@ public class BookieRecoveryAddEntryTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
-			// Minimal test suite
-			{ TestUtil.validEntry(), null, null, new byte[0], null },
-			{ null, callback, null, new byte[0], NullPointerException.class },
-			{ TestUtil.validEntry(), callback, "ledger-test", new byte[0], null },
-			{ TestUtil.invalidEntry(), callback, new String(), new byte[0], IllegalArgumentException.class },
-			{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], IllegalArgumentException.class },
-			{ TestUtil.validEntry(), null, new String(), null, Bookie.NoLedgerException.class },
 			
-			// Added after
-			{ TestUtil.validEntry(), callback, null, new byte[1], null },
+			// Minimal test suite
+			{ TestUtil.validEntry(), null, null, new byte[1], null },
+			{ TestUtil.validEntry(), callback, "ledger-test", new byte[0], null },
+			{ null, callback, null, new byte[0], NullPointerException.class },
+			{ TestUtil.invalidEntry(), null, "ledger-test", new byte[1], IllegalArgumentException.class },
+
+			// Added after the improvement of the test suite
+			//{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], IllegalArgumentException.class },
+			//{ TestUtil.validEntry(), callback, null, new byte[0], null },
 		});
 	}
 

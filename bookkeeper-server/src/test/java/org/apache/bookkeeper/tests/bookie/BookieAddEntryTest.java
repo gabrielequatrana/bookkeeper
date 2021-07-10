@@ -66,16 +66,15 @@ public class BookieAddEntryTest {
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
 			
-			// Minimal test suite
-			{ TestUtil.validEntry(), false, null, null, new byte[0], null },
+			// Minimal test suite 
+			{ TestUtil.validEntry(), false, null, null, new byte[1], null },
 			{ TestUtil.validEntry(), false, callback, "ledger-test", new byte[0], null },
-			{ null, false, callback, null, new byte[0], NullPointerException.class},
-			{ TestUtil.invalidEntry(), false, null, new String(), new byte[0], IllegalArgumentException.class },
-			{ TestUtil.invalidEntry(), true, callback, "ledger-test", new byte[1], IllegalArgumentException.class },
-			{ TestUtil.validEntry(), true, callback, new String(), null, Bookie.NoLedgerException.class },
+			{ null, true, callback, null, new byte[0], NullPointerException.class},
+			{ TestUtil.invalidEntry(), false, null, "ledger-test", new byte[1], IllegalArgumentException.class },
 			
 			// Added after the improvement of the test suite
-			{ TestUtil.validEntry(), false, callback, null, new byte[1], null },
+			//{ TestUtil.invalidEntry(), true, callback, "ledger-test", new byte[1], IllegalArgumentException.class },
+			//{ TestUtil.validEntry(), true, callback, null, new byte[0], null },
 		});
 	}
 

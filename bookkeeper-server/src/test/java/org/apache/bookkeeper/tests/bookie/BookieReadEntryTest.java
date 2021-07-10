@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.bookkeeper.bookie.Bookie;
 import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
-import org.apache.bookkeeper.bookie.InterleavedLedgerStorage;
 import org.apache.bookkeeper.conf.ServerConfiguration;
 import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
 import org.apache.bookkeeper.tests.util.TestUtil;
@@ -62,11 +61,14 @@ public class BookieReadEntryTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
+			
 			// Minimal test suite
-			{ 1L, 0L, null },
-			{ 0L, 1L, null },
+			{ 1L, 1L, null },
+			{ 0L, -1L, IndexOutOfBoundsException.class },
 			{ -1L, 0L, IllegalArgumentException.class },
-			{ -2L, 1L, IllegalArgumentException.class },
+			
+			// Added after the improvement of the test suite
+			//{ -2L, 1L, IllegalArgumentException.class },
 		});
 	}
 

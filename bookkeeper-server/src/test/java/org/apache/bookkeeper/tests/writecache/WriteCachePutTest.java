@@ -54,8 +54,10 @@ public class WriteCachePutTest {
 			{ 0L, 1L, TestUtil.generateEntry(ENTRY_SIZE, 0L, 1L), null },
 			{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE, -1L, 0L), IllegalArgumentException.class },
 			{ 0L, -1L, TestUtil.generateEntry(ENTRY_SIZE, 0L, -1L), IllegalArgumentException.class },
-			{ 1L, 0L, TestUtil.generateEntry(CACHE_SIZE + 1, 1L, 0L), IndexOutOfBoundsException.class },
-			{ 0L, 1L, null, NullPointerException.class }
+			{ 1L, 0L, null, NullPointerException.class },
+			
+			// Added after the improvement of the test suite
+			//{ 1L, 0L, TestUtil.generateEntry(CACHE_SIZE + 1, 1L, 0L), IndexOutOfBoundsException.class },
 		});
 	}
 

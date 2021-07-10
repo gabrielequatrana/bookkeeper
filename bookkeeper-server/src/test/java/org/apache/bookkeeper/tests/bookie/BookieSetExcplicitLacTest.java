@@ -63,14 +63,16 @@ public class BookieSetExcplicitLacTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
+			
 			// Minimal test suite
-			{ TestUtil.validEntry(), null, null, new byte[0], null },
+			{ TestUtil.validEntry(), null, null, new byte[1], null },
 			{ TestUtil.validEntry(), callback, "ledger-test", new byte[0], null },
-			{ null, callback, null, new byte[0], NullPointerException.class},
-			{ TestUtil.invalidEntry(), null, new String(), new byte[0], null },
-			{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], null },
-			{ TestUtil.validEntry(), callback, new String(), null, Bookie.NoLedgerException.class } 
-		});
+			{ null, callback, null, new byte[0], NullPointerException.class },
+			{ TestUtil.invalidEntry(), null, "ledger-test", new byte[1], null },
+
+			// Added after the improvement of the test suite
+			//{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[1], null },
+			//{ TestUtil.validEntry(), callback, null, new byte[0], null },});
 	}
 
 	// Setup the test environment
