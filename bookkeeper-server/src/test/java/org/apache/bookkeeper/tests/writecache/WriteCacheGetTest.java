@@ -51,13 +51,14 @@ public class WriteCacheGetTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
+			
 			// Minimal test suite
 			{ 1L, 1L, null },
 			{ -1L, 0L, IllegalArgumentException.class },
 			{ 0L, -1L, IllegalArgumentException.class },
 			
 			// Added after the improvement of the test suite
-			//{ 0L, 0L, null }
+			{ 0L, 0L, null }
 		});
 	}
 

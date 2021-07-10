@@ -50,6 +50,7 @@ public class WriteCachePutTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
+			
 			// Minimal test suite
 			{ 0L, 1L, TestUtil.generateEntry(ENTRY_SIZE), null },
 			{ -1L, 0L, TestUtil.generateEntry(CACHE_SIZE + 1), IndexOutOfBoundsException.class },
@@ -57,7 +58,7 @@ public class WriteCachePutTest {
 			{ 1L, 0L, null, NullPointerException.class },
 			
 			// Added after the improvement of the test suite
-			//{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE), IllegalArgumentException.class }
+			{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE), IllegalArgumentException.class }
 		});
 	}
 
