@@ -76,19 +76,17 @@ public class WriteCacheGetLastEntryTest {
 	@Test
 	public void getLastEntryTest() {
 		
-		// Buffer to store entry data
-		byte[] dst = new byte[ENTRY_SIZE-16];
 		
 		// Add some entries to the cache
+		ByteBuf entry = null;
 		for (int i = 0; i <= numEntries; i++) {
-			ByteBuf entry = TestUtil.generateEntry(ENTRY_SIZE, ledgerId, (long) i);
+			entry = TestUtil.generateEntry(ENTRY_SIZE, ledgerId, (long) i);
 			writeCache.put(ledgerId, (long)i, entry);
-			
-			// Get last entry data
-			if (i == numEntries) {
-				entry.getBytes(16, dst);
-			}
 		}
+		
+		// Get last entry data
+		byte[] dst = new byte[ENTRY_SIZE-16];
+		entry.getBytes(16, dst);		
 		
 		// Retrieve last entry from the cache
 		ByteBuf bufGet = writeCache.getLastEntry(ledgerId);
