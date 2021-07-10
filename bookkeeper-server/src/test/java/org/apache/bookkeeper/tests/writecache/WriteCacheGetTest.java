@@ -57,7 +57,7 @@ public class WriteCacheGetTest {
 			{ 0L, -1L, IllegalArgumentException.class },
 			
 			// Added after the improvement of the test suite
-			{ 0L, 0L, null }
+			//{ 0L, 0L, null }
 		});
 	}
 
@@ -65,7 +65,7 @@ public class WriteCacheGetTest {
 	@Before
 	public void setUp() {	
 		writeCache = new WriteCache(ByteBufAllocator.DEFAULT, CACHE_SIZE);
-		entry = TestUtil.generateEntry(ENTRY_SIZE, ledgerId, entryId);
+		entry = TestUtil.generateEntry(ENTRY_SIZE);
 		
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);

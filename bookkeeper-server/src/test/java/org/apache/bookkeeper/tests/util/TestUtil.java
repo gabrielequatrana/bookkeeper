@@ -67,14 +67,8 @@ public class TestUtil {
 		return buf;
 	}
 	
-	public static ByteBuf generateEntry(int entrySize, long ledgerId, long entryId) {
-		byte[] data = ("ledger-" + ledgerId + "-" + entryId).getBytes();
-		ByteBuf buf = Unpooled.buffer(entrySize);
-		buf.writeLong(ledgerId);
-		buf.writeLong(entryId);
-		buf.writeBytes(data);
-		buf.writeBytes(new byte[entrySize - 8 - 8 - data.length]);
-		return buf;
+	public static ByteBuf generateEntry(int entrySize) {
+		return Unpooled.wrappedBuffer(new byte[entrySize]);
 	}
 	
 	public static ByteBuf validEntry() {

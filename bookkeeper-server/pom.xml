@@ -292,13 +292,14 @@
 					</targetClasses>
 					<targetTests>
 						<param>org.apache.bookkeeper.tests.bookie.BookieAddEntryTest</param>
-						<param>org.apache.bookkeeper.tests.bookie.BookieFenceAndRecoveryAddEntryTest</param>
+						<param>org.apache.bookkeeper.tests.bookie.BookieRecoveryAddEntryTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieGetExplicitLacTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieGetListOfEntriesOfLedgerTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieReadEntryTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieReadLastAddConfirmedTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieSetExplicitLacTest</param>
 						<param>org.apache.bookkeeper.tests.writecache.WriteCacheGetTest</param>
+						<param>org.apache.bookkeeper.tests.writecache.WriteCacheGetLastEntryTest</param>
 						<param>org.apache.bookkeeper.tests.writecache.WriteCachePutTest</param>
 					</targetTests>
 					<avoidCallsTo>

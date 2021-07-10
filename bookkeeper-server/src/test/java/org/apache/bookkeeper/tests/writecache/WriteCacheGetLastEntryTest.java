@@ -80,7 +80,7 @@ public class WriteCacheGetLastEntryTest {
 		// Add some entries to the cache
 		ByteBuf entry = null;
 		for (int i = 0; i <= numEntries; i++) {
-			entry = TestUtil.generateEntry(ENTRY_SIZE, ledgerId, (long) i);
+			entry = TestUtil.generateEntry(ENTRY_SIZE);
 			writeCache.put(ledgerId, (long)i, entry);
 		}
 		
