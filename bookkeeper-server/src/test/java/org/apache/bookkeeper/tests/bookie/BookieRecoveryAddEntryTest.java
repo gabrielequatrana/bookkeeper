@@ -70,9 +70,9 @@ public class BookieRecoveryAddEntryTest {
 			{ TestUtil.invalidEntry(), null, "ledger-test", new byte[1], IllegalArgumentException.class },
 
 			// Added after the improvement of the test suite
-			//{ TestUtil.validEntry(), callback, "ledger-test", new byte[0], null },
-			//{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[256], IllegalArgumentException.class },
-			//{ TestUtil.validEntry(), callback, null, new byte[0], null },
+			{ TestUtil.validEntry(), callback, "ledger-test", new byte[0], null },
+			{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[256], IllegalArgumentException.class },
+			{ TestUtil.validEntry(), callback, null, new byte[0], null },
 		});
 	}
 
