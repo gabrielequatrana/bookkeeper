@@ -58,7 +58,11 @@ public class WriteCachePutTest {
 			{ 1L, 0L, null, NullPointerException.class },
 			
 			// Added after the improvement of the test suite
-			{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE), IllegalArgumentException.class }
+			{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE), IllegalArgumentException.class },
+		
+			// Added after mutation testing
+			{ 3L, 5L, TestUtil.generateEntry(CACHE_SIZE), null },
+			{ 1L, 2L, TestUtil.generateEntry(0), null },
 		});
 	}
 
