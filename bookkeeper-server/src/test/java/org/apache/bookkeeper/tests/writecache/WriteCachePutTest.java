@@ -57,8 +57,8 @@ public class WriteCachePutTest {
 			{ 0L, -1L, TestUtil.generateEntry(ENTRY_SIZE), IllegalArgumentException.class },
 			
 			// Added after the improvement of the test suite
-			{ 0L, 0L, TestUtil.generateEntry(ENTRY_SIZE), null },
-			{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE), IllegalArgumentException.class },
+			//{ 0L, 0L, TestUtil.generateEntry(ENTRY_SIZE), null },
+			//{ -1L, 0L, TestUtil.generateEntry(ENTRY_SIZE), IllegalArgumentException.class },
 		
 			// Added after mutation testing
 			//{ 3L, 5L, TestUtil.generateEntry(CACHE_SIZE), null },

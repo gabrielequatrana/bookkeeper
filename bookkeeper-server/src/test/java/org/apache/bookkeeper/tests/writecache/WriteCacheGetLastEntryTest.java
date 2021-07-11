@@ -76,7 +76,6 @@ public class WriteCacheGetLastEntryTest {
 	@Test
 	public void getLastEntryTest() {
 		
-		
 		// Add some entries to the cache
 		ByteBuf entry = null;
 		for (int i = 0; i <= numEntries; i++) {
@@ -96,7 +95,7 @@ public class WriteCacheGetLastEntryTest {
 		// Convert data into string
 		String expected = new String(dst, StandardCharsets.UTF_8);
 		String actual = new String(dstGet, StandardCharsets.UTF_8);
-
+		
 		// Assert that the last entry is the same as the retrieved entry from the cache
 		assertEquals(expected, actual);
 	}

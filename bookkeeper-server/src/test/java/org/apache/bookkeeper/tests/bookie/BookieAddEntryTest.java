@@ -68,13 +68,13 @@ public class BookieAddEntryTest {
 			
 			// Minimal test suite 
 			{ TestUtil.validEntry(), false, null, null, new byte[1], null },
-			{ TestUtil.validEntry(), false, callback, "ledger-test", new byte[0], null },
 			{ null, true, callback, null, new byte[0], NullPointerException.class},
 			{ TestUtil.invalidEntry(), false, null, "ledger-test", new byte[1], IllegalArgumentException.class },
 			
 			// Added after the improvement of the test suite
-			{ TestUtil.invalidEntry(), true, callback, "ledger-test", new byte[1], IllegalArgumentException.class },
-			{ TestUtil.validEntry(), true, callback, null, new byte[0], null },
+			//{ TestUtil.validEntry(), false, callback, "ledger-test", new byte[0], null },
+			//{ TestUtil.invalidEntry(), true, callback, "ledger-test", new byte[256], IllegalArgumentException.class },
+			//{ TestUtil.validEntry(), true, callback, null, new byte[0], null },
 		});
 	}
 
@@ -110,7 +110,7 @@ public class BookieAddEntryTest {
 
 		// Sleep for 1 second
 		Thread.sleep(1000);
-
+	
 		// Assert that the free space is less than before adding the entry
 		assertTrue(ledgerDir.getUsableSpace() < usableSpace);
 	}
