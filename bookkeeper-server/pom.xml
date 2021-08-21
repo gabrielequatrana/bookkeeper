@@ -263,6 +263,34 @@
 					</execution>
 				</executions>
 			</plugin>
+			
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<destFile>${project.build.directory}/jacoco.exec</destFile>
+							<propertyName>argLine</propertyName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${project.build.directory}/jacoco.exec</dataFile>
+							<outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -286,18 +314,14 @@
 				<version>1.6.2</version>
 				<configuration>
 					<targetClasses>
-						<param>org.apache.bookkeeper.bookie.Bookie</param>
 						<param>org.apache.bookkeeper.bookie.BookieImpl</param>
 						<param>org.apache.bookkeeper.bookie.storage.ldb.WriteCache</param>
 					</targetClasses>
 					<targetTests>
 						<param>org.apache.bookkeeper.tests.bookie.BookieAddEntryTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieRecoveryAddEntryTest</param>
-						<param>org.apache.bookkeeper.tests.bookie.BookieGetExplicitLacTest</param>
-						<param>org.apache.bookkeeper.tests.bookie.BookieGetListOfEntriesOfLedgerTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieReadEntryTest</param>
 						<param>org.apache.bookkeeper.tests.bookie.BookieReadLastAddConfirmedTest</param>
-						<param>org.apache.bookkeeper.tests.bookie.BookieSetExplicitLacTest</param>
 						<param>org.apache.bookkeeper.tests.writecache.WriteCacheGetTest</param>
 						<param>org.apache.bookkeeper.tests.writecache.WriteCacheGetLastEntryTest</param>
 						<param>org.apache.bookkeeper.tests.writecache.WriteCachePutTest</param>

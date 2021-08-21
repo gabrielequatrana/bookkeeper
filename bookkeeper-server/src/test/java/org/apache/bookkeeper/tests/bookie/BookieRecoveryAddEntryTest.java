@@ -6,12 +6,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.bookkeeper.bookie.Bookie;
 import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
 import org.apache.bookkeeper.conf.ServerConfiguration;
+import org.apache.bookkeeper.net.BookieId;
 import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
 import org.apache.bookkeeper.tests.util.TestUtil;
 import org.junit.After;
@@ -49,8 +49,15 @@ public class BookieRecoveryAddEntryTest {
 	private File journalDir;
 	private File ledgerDir;
 	private ServerConfiguration conf;
-	private static CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
-	private static WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
+	private static Object validCtx = new Object();
+	private static byte[] validMasterKey = {0, 1, 2, 3, 4};
+	private static byte[] emptyMasterKey = {};
+	private static WriteCallback validCb = new WriteCallback() {
+		@Override
+		public void writeComplete(int rc, long ledgerId, long entryId, BookieId addr, Object ctx) {
+			// empty
+		}
+	};
 	
 	public BookieRecoveryAddEntryTest(ByteBuf entry, WriteCallback cb, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
 		this.entry = entry;
@@ -65,14 +72,9 @@ public class BookieRecoveryAddEntryTest {
 		return Arrays.asList(new Object[][] {
 			
 			// Minimal test suite
-			{ TestUtil.validEntry(), null, null, new byte[1], null },
-			{ null, callback, null, new byte[0], NullPointerException.class },
-			{ TestUtil.invalidEntry(), null, "ledger-test", new byte[1], IllegalArgumentException.class },
-
-			// Added after the improvement of the test suite
-			{ TestUtil.validEntry(), callback, "ledger-test", new byte[0], null },
-			{ TestUtil.invalidEntry(), callback, "ledger-test", new byte[256], IllegalArgumentException.class },
-			{ TestUtil.validEntry(), callback, null, new byte[0], null },
+			{ TestUtil.validEntry(), null, null, validMasterKey, null },
+			{ null, validCb, null, emptyMasterKey, NullPointerException.class },
+			{ TestUtil.invalidEntry(), null, validCtx, validMasterKey, IllegalArgumentException.class },
 		});
 	}
 
@@ -114,7 +116,7 @@ public class BookieRecoveryAddEntryTest {
 
 		// Sleep for 1 second
 		Thread.sleep(1000);
-
+		
 		// Assert that the free space is less than before adding the entry
 		assertTrue(ledgerDir.getUsableSpace() < usableSpace);
 	}

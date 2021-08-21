@@ -4,15 +4,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.bookkeeper.bookie.Bookie;
 import org.apache.bookkeeper.bookie.BookieException;
 import org.apache.bookkeeper.bookie.BookieImpl;
 import org.apache.bookkeeper.conf.ServerConfiguration;
+import org.apache.bookkeeper.net.BookieId;
 import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
 import org.apache.bookkeeper.tests.util.TestUtil;
 import org.junit.After;
@@ -48,10 +47,14 @@ public class BookieReadEntryTest {
 	private File journalDir;
 	private File ledgerDir;
 	private ServerConfiguration conf;
-	private ByteBuf entry;
-	private CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
-	private WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
-
+	private ByteBuf expectedEntry;
+	private static WriteCallback callback = new WriteCallback() {
+		@Override
+		public void writeComplete(int rc, long ledgerId, long entryId, BookieId addr, Object ctx) {
+			// empty
+		}
+	};
+	
 	public BookieReadEntryTest(long ledgerId, long entryId, Class<? extends Exception> expectedException) {
 		this.ledgerId = ledgerId;
 		this.entryId = entryId;
@@ -64,11 +67,9 @@ public class BookieReadEntryTest {
 			
 			// Minimal test suite
 			{ 1L, 1L, null },
-			{ 0L, -1L, IndexOutOfBoundsException.class },
-			{ -1L, 0L, IllegalArgumentException.class },
-			
-			// Added after the improvement of the test suite
-			{ 0L, 0L, null },
+			{ 1L, 2L, Bookie.NoEntryException.class },
+			{ 0L, -1L, Bookie.NoLedgerException.class },
+			{ -1L, 0L, Bookie.NoLedgerException.class },
 		});
 	}
 
@@ -82,7 +83,13 @@ public class BookieReadEntryTest {
 		bookie = new BookieImpl(conf);
 		bookie.start();
 		
-		entry = TestUtil.generateEntry(ledgerId, entryId);
+		ByteBuf entry = TestUtil.validEntry();
+		bookie.addEntry(entry, false, callback, null, new byte[0]);
+		
+		expectedEntry = entry;
+		if (ledgerId != 1 || entryId != 1) {
+			expectedEntry = null;
+		}
 		
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);
@@ -96,25 +103,12 @@ public class BookieReadEntryTest {
 	}
 
 	@Test
-	public void readEntryTest() throws IOException, BookieException, InterruptedException {
-		
-		// Get entry data
-		byte[] dst = new byte[entry.capacity() - 16];
-		entry.getBytes(16, dst);
-
-		// Add the entry to the bookie
-		bookie.addEntry(entry, false, callback, null, new byte[0]);
+	public void readEntryTest() throws IOException {
 
 		// Retrieve the entry from the bookie
-		ByteBuf actual = bookie.readEntry(ledgerId, entryId);
-		byte[] actualDst = new byte[actual.capacity() - 16];
-		actual.getBytes(16, actualDst);
-
-		// Convert data into string
-		String expectedData = new String(dst, StandardCharsets.UTF_8);
-		String actualData = new String(actualDst, StandardCharsets.UTF_8);
+		ByteBuf actualEntry = bookie.readEntry(ledgerId, entryId);
 
 		// Assert that the added entry is the same as the retrieved entry from the bookie
-		assertEquals(expectedData, actualData);
+		assertEquals(expectedEntry, actualEntry);
 	}
 }

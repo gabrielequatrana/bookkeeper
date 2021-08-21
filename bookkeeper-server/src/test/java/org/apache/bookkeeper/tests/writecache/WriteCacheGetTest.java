@@ -2,7 +2,6 @@ package org.apache.bookkeeper.tests.writecache;
 
 import static org.junit.Assert.assertEquals;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -37,7 +36,7 @@ public class WriteCacheGetTest {
 	private Class<? extends Exception> expectedException;
 	
 	// Test environment
-	private ByteBuf entry;
+	private ByteBuf expectedEntry;
 
 	// Rule to manage expected exception
 	@Rule public ExpectedException exceptionRule = ExpectedException.none();
@@ -51,14 +50,11 @@ public class WriteCacheGetTest {
 	@Parameters
 	public static Collection<Object[]> getParameters() {
 		return Arrays.asList(new Object[][] {
-			
 			// Minimal test suite
 			{ 1L, 1L, null },
+			{ 2L, 2L, null },
 			{ -1L, 0L, IllegalArgumentException.class },
-			{ 0L, -1L, IllegalArgumentException.class },
-			
-			// Added after the improvement of the test suite
-			{ 0L, 0L, null }
+			{ 0L, -1L, null },
 		});
 	}
 
@@ -66,7 +62,13 @@ public class WriteCacheGetTest {
 	@Before
 	public void setUp() {	
 		writeCache = new WriteCache(ByteBufAllocator.DEFAULT, CACHE_SIZE);
-		entry = TestUtil.generateEntry(ENTRY_SIZE);
+		ByteBuf entry = TestUtil.generateEntry(ENTRY_SIZE);
+		writeCache.put(1L, 1L, entry);
+		
+		expectedEntry = entry;
+		if (ledgerId != 1 || entryId != 1) {
+			expectedEntry = null;
+		}
 		
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);
@@ -83,27 +85,10 @@ public class WriteCacheGetTest {
 	@Test
 	public void getTest() {
 
-		// Get entry data
-		byte[] dst = new byte[ENTRY_SIZE-16];
-		entry.getBytes(16, dst);
-
-		// Add the entry to the cache
-		boolean result = writeCache.put(ledgerId, entryId, entry);
-		if (!result) {
-			// Entry was not added to the cache
-			throw new IndexOutOfBoundsException();
-		}
-
 		// Retrieve the entry from the cache
-		ByteBuf bufGet = writeCache.get(ledgerId, entryId);
-		byte[] dstGet = new byte[ENTRY_SIZE-16];
-		bufGet.getBytes(16, dstGet);
-		
-		// Convert data into string
-		String expected = new String(dst, StandardCharsets.UTF_8);
-		String actual = new String(dstGet, StandardCharsets.UTF_8);
+		ByteBuf actualEntry = writeCache.get(ledgerId, entryId);
 
 		// Assert that the added entry is the same as the retrieved entry from the cache
-		assertEquals(expected, actual);
+		assertEquals(expectedEntry, actualEntry);
 	}
 }

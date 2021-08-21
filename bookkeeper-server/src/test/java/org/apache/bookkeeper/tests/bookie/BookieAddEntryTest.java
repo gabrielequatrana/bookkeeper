@@ -6,12 +6,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.bookkeeper.bookie.Bookie;
 import org.apache.bookkeeper.bookie.BookieException;
+import org.apache.bookkeeper.bookie.BookieException.LedgerFencedException;
 import org.apache.bookkeeper.bookie.BookieImpl;
 import org.apache.bookkeeper.conf.ServerConfiguration;
+import org.apache.bookkeeper.net.BookieId;
 import org.apache.bookkeeper.proto.BookkeeperInternalCallbacks.WriteCallback;
 import org.apache.bookkeeper.tests.util.TestUtil;
 import org.junit.After;
@@ -47,18 +48,27 @@ public class BookieAddEntryTest {
 	@Rule public ExpectedException exceptionRule = ExpectedException.none();
 
 	// Test environment
+	private boolean fenced;
 	private File journalDir;
 	private File ledgerDir;
 	private ServerConfiguration conf;
-	private static CompletableFuture<Integer> writeFuture = new CompletableFuture<>();
-	private static WriteCallback callback = (rc, lid, eid, addr, c) -> writeFuture.complete(rc);
-
-	public BookieAddEntryTest(ByteBuf entry, boolean ackBeforeSync, WriteCallback cb, Object ctx, byte[] masterKey, Class<? extends Exception> expectedException) {
+	private static Object validCtx = new Object();
+	private static byte[] validMasterKey = {0, 1, 2, 3, 4};
+	private static byte[] emptyMasterKey = {};
+	private static WriteCallback validCb = new WriteCallback() {
+		@Override
+		public void writeComplete(int rc, long ledgerId, long entryId, BookieId addr, Object ctx) {
+			// empty
+		}
+	};
+	
+	public BookieAddEntryTest(ByteBuf entry, boolean ackBeforeSync, WriteCallback cb, Object ctx, byte[] masterKey, boolean improvement, Class<? extends Exception> expectedException) {
 		this.entry = entry;
 		this.ackBeforeSync = ackBeforeSync;
 		this.cb = cb;
 		this.ctx = ctx;
 		this.masterKey = masterKey;
+		this.fenced = improvement;
 		this.expectedException = expectedException;
 	}
 
@@ -67,14 +77,12 @@ public class BookieAddEntryTest {
 		return Arrays.asList(new Object[][] {
 			
 			// Minimal test suite 
-			{ TestUtil.validEntry(), false, null, null, new byte[1], null },
-			{ null, true, callback, null, new byte[0], NullPointerException.class},
-			{ TestUtil.invalidEntry(), false, null, "ledger-test", new byte[1], IllegalArgumentException.class },
+			{ TestUtil.validEntry(), false, null, null, validMasterKey, false, null },
+			{ null, true, validCb, null, emptyMasterKey, false, NullPointerException.class },
+			{ TestUtil.invalidEntry(), false, null, validCtx, validMasterKey, false, IllegalArgumentException.class },
 			
 			// Added after the improvement of the test suite
-			{ TestUtil.validEntry(), false, callback, "ledger-test", new byte[0], null },
-			{ TestUtil.invalidEntry(), true, callback, "ledger-test", new byte[256], IllegalArgumentException.class },
-			{ TestUtil.validEntry(), true, callback, null, new byte[0], null },
+			{ TestUtil.validEntry(), true, validCb, validCtx, validMasterKey, true, LedgerFencedException.class },
 		});
 	}
 
@@ -84,7 +92,7 @@ public class BookieAddEntryTest {
 		journalDir = testDir.newFolder("journal");
 		ledgerDir = testDir.newFolder("ledger");
 		conf = TestUtil.getConfiguration(journalDir, ledgerDir);
-		
+
 		bookie = new BookieImpl(conf);
 		bookie.start();
 		
@@ -101,6 +109,12 @@ public class BookieAddEntryTest {
 	
 	@Test
 	public void addEntryTest() throws IOException, BookieException, InterruptedException {
+		
+		if (fenced) {
+			
+			// Fence the ledger 1
+			bookie.fenceLedger(1L, masterKey);
+		}
 		
 		// Get free space before adding a new entry
 		long usableSpace = ledgerDir.getUsableSpace();

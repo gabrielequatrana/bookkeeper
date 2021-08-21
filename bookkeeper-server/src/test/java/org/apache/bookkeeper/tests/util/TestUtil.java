@@ -23,28 +23,28 @@ public class TestUtil {
 	public static ServerConfiguration getConfiguration(File journalDir, File ledgerDir) throws SocketException {
 		float usage = 1.0f - ((float) ledgerDir.getUsableSpace()) / ledgerDir.getTotalSpace();
 		
-		ServerConfiguration confReturn = new ServerConfiguration();
-		confReturn.setTLSEnabledProtocols("TLSv1.2,TLSv1.1");
-		confReturn.setJournalFlushWhenQueueEmpty(true);
-		confReturn.setJournalFormatVersionToWrite(5);
-		confReturn.setAllowEphemeralPorts(true);
-		confReturn.setBookiePort(0);
-		confReturn.setGcWaitTime(1000);
-		confReturn.setDiskUsageThreshold(0.999f);
-		confReturn.setDiskUsageWarnThreshold(0.99f);
-		confReturn.setAllocatorPoolingPolicy(PoolingPolicy.UnpooledHeap);
-		confReturn.setProperty(DbLedgerStorage.WRITE_CACHE_MAX_SIZE_MB, 4);
-		confReturn.setProperty(DbLedgerStorage.READ_AHEAD_CACHE_MAX_SIZE_MB, 4);
-		confReturn.setListeningInterface(getLoopbackInterfaceName());
-		confReturn.setAllowLoopback(true);
-		confReturn.setJournalDirsName(new String[] { journalDir.getAbsolutePath() });
-		confReturn.setLedgerDirNames(new String[] { ledgerDir.getAbsolutePath() });
-		confReturn.setMetadataServiceUri(null);
-		confReturn.setDiskUsageThreshold(usage / 2);
-		confReturn.setDiskUsageWarnThreshold(usage / 3);
-		confReturn.setMinUsableSizeForEntryLogCreation(Long.MIN_VALUE);
-		confReturn.setLedgerStorageClass(InterleavedLedgerStorage.class.getName());
-		return confReturn;
+		ServerConfiguration conf = new ServerConfiguration();
+		conf.setTLSEnabledProtocols("TLSv1.2,TLSv1.1");
+		conf.setJournalFlushWhenQueueEmpty(true);
+		conf.setJournalFormatVersionToWrite(5);
+		conf.setAllowEphemeralPorts(true);
+		conf.setBookiePort(0);
+		conf.setGcWaitTime(1000);
+		conf.setDiskUsageThreshold(0.999f);
+		conf.setDiskUsageWarnThreshold(0.99f);
+		conf.setAllocatorPoolingPolicy(PoolingPolicy.UnpooledHeap);
+		conf.setProperty(DbLedgerStorage.WRITE_CACHE_MAX_SIZE_MB, 4);
+		conf.setProperty(DbLedgerStorage.READ_AHEAD_CACHE_MAX_SIZE_MB, 4);
+		conf.setListeningInterface(getLoopbackInterfaceName());
+		conf.setAllowLoopback(true);
+		conf.setJournalDirsName(new String[] { journalDir.getAbsolutePath() });
+		conf.setLedgerDirNames(new String[] { ledgerDir.getAbsolutePath() });
+		conf.setMetadataServiceUri(null);
+		conf.setDiskUsageThreshold(usage / 2);
+		conf.setDiskUsageWarnThreshold(usage / 3);
+		conf.setMinUsableSizeForEntryLogCreation(Long.MIN_VALUE);
+		conf.setLedgerStorageClass(InterleavedLedgerStorage.class.getName());
+		return conf;
 	}
 
 	private static String getLoopbackInterfaceName() throws SocketException {

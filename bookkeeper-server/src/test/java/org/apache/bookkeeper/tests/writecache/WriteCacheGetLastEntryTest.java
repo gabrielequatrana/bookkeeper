@@ -2,7 +2,6 @@ package org.apache.bookkeeper.tests.writecache;
 
 import static org.junit.Assert.assertEquals;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -37,6 +36,7 @@ public class WriteCacheGetLastEntryTest {
 	
 	// Test environment
 	private int numEntries = 4;
+	private ByteBuf expectedEntry;
 
 	// Rule to manage expected exception
 	@Rule public ExpectedException exceptionRule = ExpectedException.none();
@@ -60,7 +60,19 @@ public class WriteCacheGetLastEntryTest {
 	@Before
 	public void setUp() {	
 		writeCache = new WriteCache(ByteBufAllocator.DEFAULT, CACHE_SIZE);
-
+		
+		// Add  entries to the cache
+		ByteBuf entry = null;
+		for (long i = 0; i <= numEntries; i++) {
+			entry = TestUtil.generateEntry(ENTRY_SIZE);
+			writeCache.put(1L, i, entry);
+		}
+		
+		expectedEntry = entry;
+		if (ledgerId != 1) {
+			expectedEntry = null;
+		}
+		
 		if (expectedException != null) {
 			exceptionRule.expect(expectedException);
 		}
@@ -75,28 +87,11 @@ public class WriteCacheGetLastEntryTest {
 
 	@Test
 	public void getLastEntryTest() {
-		
-		// Add some entries to the cache
-		ByteBuf entry = null;
-		for (int i = 0; i <= numEntries; i++) {
-			entry = TestUtil.generateEntry(ENTRY_SIZE);
-			writeCache.put(ledgerId, (long)i, entry);
-		}
-		
-		// Get last entry data
-		byte[] dst = new byte[ENTRY_SIZE-16];
-		entry.getBytes(16, dst);		
-		
+			
 		// Retrieve last entry from the cache
-		ByteBuf bufGet = writeCache.getLastEntry(ledgerId);
-		byte[] dstGet = new byte[ENTRY_SIZE-16];
-		bufGet.getBytes(16, dstGet);
-		
-		// Convert data into string
-		String expected = new String(dst, StandardCharsets.UTF_8);
-		String actual = new String(dstGet, StandardCharsets.UTF_8);
-		
+		ByteBuf actualEntry = writeCache.getLastEntry(ledgerId);
+
 		// Assert that the last entry is the same as the retrieved entry from the cache
-		assertEquals(expected, actual);
+		assertEquals(expectedEntry, actualEntry);
 	}
 }

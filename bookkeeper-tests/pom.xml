@@ -19,7 +19,7 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
+		<!--  <dependency>
 			<groupId>org.apache.bookkeeper</groupId>
 			<artifactId>bkctl</artifactId>
 			<version>${project.parent.version}</version>
@@ -63,13 +63,13 @@
 			<groupId>org.apache.bookkeeper</groupId>
 			<artifactId>bookkeeper-proto</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.apache.bookkeeper</groupId>
 			<artifactId>bookkeeper-server</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
-		<dependency>
+		<!--  <dependency>
 			<groupId>org.apache.bookkeeper</groupId>
 			<artifactId>bookkeeper-server-shaded</artifactId>
 			<version>${project.parent.version}</version>
@@ -228,7 +228,7 @@
 			<groupId>org.apache.bookkeeper.http</groupId>
 			<artifactId>vertx-http-server</artifactId>
 			<version>${project.parent.version}</version>
-		</dependency>
+		</dependency>-->
 	</dependencies>
 
 	<build>
