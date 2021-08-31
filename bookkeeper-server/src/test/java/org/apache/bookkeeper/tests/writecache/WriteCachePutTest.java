@@ -117,7 +117,7 @@ public class WriteCachePutTest {
 		
 		else {
 			writeCache.put(ledgerId, entryId, entry);
-			writeCache.put(ledgerId, entryId+1, entry);
+			writeCache.put(ledgerId, entryId + 1L, entry);
 			
 			numEntries = 2;
 		}

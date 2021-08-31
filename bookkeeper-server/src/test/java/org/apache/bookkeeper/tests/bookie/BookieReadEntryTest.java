@@ -68,8 +68,7 @@ public class BookieReadEntryTest {
 			// Minimal test suite
 			{ 1L, 1L, null },
 			{ 1L, 2L, Bookie.NoEntryException.class },
-			{ 0L, -1L, Bookie.NoLedgerException.class },
-			{ -1L, 0L, Bookie.NoLedgerException.class },
+			{ 2L, 1L, Bookie.NoLedgerException.class },
 		});
 	}
 
